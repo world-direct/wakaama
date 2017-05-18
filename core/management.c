@@ -68,7 +68,7 @@ static int prv_readAttributes(multi_option_t * query,
             if (0 != ((attrP->toSet | attrP->toClear) & LWM2M_ATTR_FLAG_MIN_PERIOD)) return -1;
             if (query->len == ATTR_MIN_PERIOD_LEN) return -1;
 
-            if (1 != utils_plainTextToInt64(query->data + ATTR_MIN_PERIOD_LEN, query->len - ATTR_MIN_PERIOD_LEN, &intValue)) return -1;
+            if (1 != utils_textToInt(query->data + ATTR_MIN_PERIOD_LEN, query->len - ATTR_MIN_PERIOD_LEN, &intValue)) return -1;
             if (intValue < 0) return -1;
 
             attrP->toSet |= LWM2M_ATTR_FLAG_MIN_PERIOD;
@@ -86,7 +86,7 @@ static int prv_readAttributes(multi_option_t * query,
             if (0 != ((attrP->toSet | attrP->toClear) & LWM2M_ATTR_FLAG_MAX_PERIOD)) return -1;
             if (query->len == ATTR_MAX_PERIOD_LEN) return -1;
 
-            if (1 != utils_plainTextToInt64(query->data + ATTR_MAX_PERIOD_LEN, query->len - ATTR_MAX_PERIOD_LEN, &intValue)) return -1;
+            if (1 != utils_textToInt(query->data + ATTR_MAX_PERIOD_LEN, query->len - ATTR_MAX_PERIOD_LEN, &intValue)) return -1;
             if (intValue < 0) return -1;
 
             attrP->toSet |= LWM2M_ATTR_FLAG_MAX_PERIOD;
@@ -104,7 +104,7 @@ static int prv_readAttributes(multi_option_t * query,
             if (0 != ((attrP->toSet | attrP->toClear) & LWM2M_ATTR_FLAG_GREATER_THAN)) return -1;
             if (query->len == ATTR_GREATER_THAN_LEN) return -1;
 
-            if (1 != utils_plainTextToFloat64(query->data + ATTR_GREATER_THAN_LEN, query->len - ATTR_GREATER_THAN_LEN, &floatValue)) return -1;
+            if (1 != utils_textToFloat(query->data + ATTR_GREATER_THAN_LEN, query->len - ATTR_GREATER_THAN_LEN, &floatValue)) return -1;
 
             attrP->toSet |= LWM2M_ATTR_FLAG_GREATER_THAN;
             attrP->greaterThan = floatValue;
@@ -121,7 +121,7 @@ static int prv_readAttributes(multi_option_t * query,
             if (0 != ((attrP->toSet | attrP->toClear) & LWM2M_ATTR_FLAG_LESS_THAN)) return -1;
             if (query->len == ATTR_LESS_THAN_LEN) return -1;
 
-            if (1 != utils_plainTextToFloat64(query->data + ATTR_LESS_THAN_LEN, query->len - ATTR_LESS_THAN_LEN, &floatValue)) return -1;
+            if (1 != utils_textToFloat(query->data + ATTR_LESS_THAN_LEN, query->len - ATTR_LESS_THAN_LEN, &floatValue)) return -1;
 
             attrP->toSet |= LWM2M_ATTR_FLAG_LESS_THAN;
             attrP->lessThan = floatValue;
@@ -138,7 +138,7 @@ static int prv_readAttributes(multi_option_t * query,
             if (0 != ((attrP->toSet | attrP->toClear) & LWM2M_ATTR_FLAG_STEP)) return -1;
             if (query->len == ATTR_STEP_LEN) return -1;
 
-            if (1 != utils_plainTextToFloat64(query->data + ATTR_STEP_LEN, query->len - ATTR_STEP_LEN, &floatValue)) return -1;
+            if (1 != utils_textToFloat(query->data + ATTR_STEP_LEN, query->len - ATTR_STEP_LEN, &floatValue)) return -1;
             if (floatValue < 0) return -1;
 
             attrP->toSet |= LWM2M_ATTR_FLAG_STEP;
@@ -214,6 +214,15 @@ coap_status_t dm_handleRequest(lwm2m_context_t * contextP,
                     result = observe_handleRequest(contextP, uriP, serverP, size, dataP, message, response);
                     if (COAP_205_CONTENT == result)
                     {
+                        if (IS_OPTION(message, COAP_OPTION_ACCEPT))
+                        {
+                            format = utils_convertMediaType(message->accept[0]);
+                        }
+                        else
+                        {
+                            format = LWM2M_CONTENT_TLV;
+                        }
+
                         res = lwm2m_data_serialize(uriP, size, dataP, &format, &buffer);
                         if (res < 0)
                         {

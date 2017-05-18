@@ -423,8 +423,10 @@ typedef enum
     STATE_DEREG_PENDING,           // deregistration pending
     STATE_BS_HOLD_OFF,             // bootstrap hold off time
     STATE_BS_INITIATED,            // bootstrap request sent
-    STATE_BS_PENDING,              // boostrap on going
+    STATE_BS_PENDING,              // boostrap ongoing
+    STATE_BS_FINISHING,            // boostrap finish received
     STATE_BS_FINISHED,             // bootstrap done
+    STATE_BS_FAILING,              // bootstrap error occurred
     STATE_BS_FAILED,               // bootstrap failed
 } lwm2m_status_t;
 
@@ -572,9 +574,6 @@ struct _lwm2m_transaction_
     time_t                response_timeout; // timeout to wait for response, if token is used. When 0, use calculated acknowledge timeout.
     uint8_t  retrans_counter;
     time_t   retrans_time;
-    char objStringID[LWM2M_STRING_ID_MAX_LEN];
-    char instanceStringID[LWM2M_STRING_ID_MAX_LEN];
-    char resourceStringID[LWM2M_STRING_ID_MAX_LEN];
     void * message;
     uint16_t buffer_len;
     uint8_t * buffer;
@@ -593,6 +592,7 @@ typedef struct _lwm2m_watcher_
     bool update;
     lwm2m_server_t * server;
     lwm2m_attributes_t * parameters;
+    lwm2m_media_type_t format;
     uint8_t token[8];
     size_t tokenLen;
     time_t lastTime;

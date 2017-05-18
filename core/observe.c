@@ -182,6 +182,14 @@ coap_status_t observe_handleRequest(lwm2m_context_t * contextP,
         memcpy(watcherP->token, message->token, message->token_len);
         watcherP->active = true;
         watcherP->lastTime = lwm2m_gettime();
+        if (IS_OPTION(message, COAP_OPTION_ACCEPT))
+        {
+            watcherP->format = utils_convertMediaType(message->accept[0]);
+        }
+        else
+        {
+            watcherP->format = LWM2M_CONTENT_TLV;
+        }
 
         if (LWM2M_URI_IS_SET_RESOURCE(uriP))
         {
@@ -258,6 +266,43 @@ void observe_cancel(lwm2m_context_t * contextP,
                 lwm2m_free(observedP);
             }
             return;
+        }
+    }
+}
+
+void observe_clear(lwm2m_context_t * contextP,
+                   lwm2m_uri_t * uriP)
+{
+    lwm2m_observed_t * observedP;
+
+    LOG_URI(uriP);
+
+    observedP = contextP->observedList;
+    while(observedP != NULL)
+    {
+        if (observedP->uri.objectId == uriP->objectId
+            && (LWM2M_URI_IS_SET_INSTANCE(uriP) == false
+                || observedP->uri.instanceId == uriP->instanceId))
+        {
+            lwm2m_observed_t * nextP;
+            lwm2m_watcher_t * watcherP;
+
+            nextP = observedP->next;
+
+            for (watcherP = observedP->watcherList; watcherP != NULL; watcherP = watcherP->next)
+            {
+                if (watcherP->parameters != NULL) lwm2m_free(watcherP->parameters);
+            }
+            LWM2M_LIST_FREE(observedP->watcherList);
+
+            prv_unlinkObserved(contextP, observedP);
+            lwm2m_free(observedP);
+
+            observedP = nextP;
+        }
+        else
+        {
+            observedP = observedP->next;
         }
     }
 }
@@ -449,7 +494,6 @@ void observe_step(lwm2m_context_t * contextP,
         double floatValue = 0;
         int64_t integerValue = 0;
         bool storeValue = false;
-        lwm2m_media_type_t format = LWM2M_CONTENT_TEXT;
         coap_packet_t message[1];
         time_t interval;
 
@@ -633,7 +677,7 @@ void observe_step(lwm2m_context_t * contextP,
                         {
                             int res;
 
-                            res = lwm2m_data_serialize(&targetP->uri, size, dataP, &format, &buffer);
+                            res = lwm2m_data_serialize(&targetP->uri, size, dataP, &(watcherP->format), &buffer);
                             if (res < 0)
                             {
                                 break;
@@ -646,14 +690,14 @@ void observe_step(lwm2m_context_t * contextP,
                         }
                         else
                         {
-                            if (COAP_205_CONTENT != object_read(contextP, &targetP->uri, &format, &buffer, &length))
+                            if (COAP_205_CONTENT != object_read(contextP, &targetP->uri, &(watcherP->format), &buffer, &length))
                             {
                                 buffer = NULL;
                                 break;
                             }
                         }
                         coap_init_message(message, COAP_TYPE_NON, COAP_205_CONTENT, 0);
-                        coap_set_header_content_type(message, format);
+                        coap_set_header_content_type(message, watcherP->format);
                         coap_set_payload(message, buffer, length);
                     }
                     watcherP->lastTime = currentTime;
@@ -848,13 +892,27 @@ int lwm2m_observe(lwm2m_context_t * contextP,
     clientP = (lwm2m_client_t *)lwm2m_list_find((lwm2m_list_t *)contextP->clientList, clientID);
     if (clientP == NULL) return COAP_404_NOT_FOUND;
 
-    observationP = (lwm2m_observation_t *)lwm2m_malloc(sizeof(lwm2m_observation_t));
-    if (observationP == NULL) return COAP_500_INTERNAL_SERVER_ERROR;
-    memset(observationP, 0, sizeof(lwm2m_observation_t));
+    for (observationP = clientP->observationList; observationP != NULL; observationP = observationP->next)
+    {
+        if (uriP->objectId == observationP->uri.objectId
+            && (LWM2M_URI_IS_SET_INSTANCE(uriP) == false
+                || observationP->uri.instanceId == uriP->instanceId)
+            && (LWM2M_URI_IS_SET_INSTANCE(uriP) == false
+                || observationP->uri.instanceId == uriP->instanceId))
+        {
+            break;
+        }
+    }
+    if (observationP == NULL)
+    {
+        observationP = (lwm2m_observation_t *)lwm2m_malloc(sizeof(lwm2m_observation_t));
+        if (observationP == NULL) return COAP_500_INTERNAL_SERVER_ERROR;
+        memset(observationP, 0, sizeof(lwm2m_observation_t));
 
-    observationP->id = lwm2m_list_newId((lwm2m_list_t *)clientP->observationList);
-    memcpy(&observationP->uri, uriP, sizeof(lwm2m_uri_t));
-    observationP->clientP = clientP;
+        observationP->id = lwm2m_list_newId((lwm2m_list_t *)clientP->observationList);
+        memcpy(&observationP->uri, uriP, sizeof(lwm2m_uri_t));
+        observationP->clientP = clientP;
+    }
     observationP->status = STATE_REG_PENDING;
     observationP->callback = callback;
     observationP->userData = userData;
@@ -874,7 +932,14 @@ int lwm2m_observe(lwm2m_context_t * contextP,
     observationP->clientP->observationList = (lwm2m_observation_t *)LWM2M_LIST_ADD(observationP->clientP->observationList, observationP);
 
     coap_set_header_observe(transactionP->message, 0);
-    coap_set_header_token(transactionP->message, token, sizeof(token));
+    if (clientP->supportJSON == true)
+    {
+        coap_set_header_accept(transactionP->message, LWM2M_CONTENT_JSON);
+    }
+    else
+    {
+        coap_set_header_accept(transactionP->message, LWM2M_CONTENT_TLV);
+    }
 
     transactionP->callback = prv_obsRequestCallback;
     transactionP->userData = (void *)observationP;
@@ -908,8 +973,14 @@ int lwm2m_observe_cancel(lwm2m_context_t * contextP,
     {
         lwm2m_transaction_t * transactionP;
         cancellation_data_t * cancelP;
+        uint8_t token[4];
 
-        transactionP = transaction_new(clientP->sessionH, COAP_GET, clientP->altPath, uriP, contextP->nextMID++, 0, NULL);
+        token[0] = clientP->internalID >> 8;
+        token[1] = clientP->internalID & 0xFF;
+        token[2] = observationP->id >> 8;
+        token[3] = observationP->id & 0xFF;
+
+        transactionP = transaction_new(clientP->sessionH, COAP_GET, clientP->altPath, uriP, contextP->nextMID++, 4, token);
         if (transactionP == NULL)
         {
             return COAP_500_INTERNAL_SERVER_ERROR;

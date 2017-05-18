@@ -336,8 +336,11 @@ coap_status_t object_create(lwm2m_context_t * contextP,
         break;
 
     default:
-        uriP->instanceId = lwm2m_list_newId(targetP->instanceList);
-        uriP->flag |= LWM2M_URI_FLAG_INSTANCE_ID;
+        if (!LWM2M_URI_IS_SET_INSTANCE(uriP))
+        {
+            uriP->instanceId = lwm2m_list_newId(targetP->instanceList);
+            uriP->flag |= LWM2M_URI_FLAG_INSTANCE_ID;
+        }
         result = targetP->createFunc(uriP->instanceId, size, dataP, targetP);
         break;
     }
@@ -366,6 +369,10 @@ coap_status_t object_delete(lwm2m_context_t * contextP,
     if (LWM2M_URI_IS_SET_INSTANCE(uriP))
     {
         result = objectP->deleteFunc(uriP->instanceId, objectP);
+        if (result == COAP_202_DELETED)
+        {
+            observe_clear(contextP, uriP);
+        }
     }
     else
     {
@@ -377,6 +384,13 @@ coap_status_t object_delete(lwm2m_context_t * contextP,
             && result == COAP_202_DELETED)
         {
             result = objectP->deleteFunc(instanceP->id, objectP);
+            if (result == COAP_202_DELETED)
+            {
+                uriP->flag |= LWM2M_URI_FLAG_INSTANCE_ID;
+                uriP->instanceId = instanceP->id;
+                observe_clear(contextP, uriP);
+                uriP->flag &= ~LWM2M_URI_FLAG_INSTANCE_ID;
+            }
             instanceP = objectP->instanceList;
         }
     }
@@ -497,8 +511,8 @@ static int prv_getObjectTemplate(uint8_t * buffer,
     buffer[1] = '/';
     index = 2;
 
-    result = utils_intCopy((char *)buffer + index, length - index, id);
-    if (result < 0) return -1;
+    result = utils_intToText(id, (char *)buffer + index, length - index);
+    if (result == 0) return -1;
     index += result;
 
     if (length - index < REG_OBJECT_MIN_LEN - 3) return -1;
@@ -573,8 +587,8 @@ int object_getRegisterPayload(lwm2m_context_t * contextP,
                     index += length;
                 }
 
-                result = utils_intCopy((char *)buffer + index, bufferLen - index, targetP->id);
-                if (result < 0) return 0;
+                result = utils_intToText(targetP->id, (char *)buffer + index, bufferLen - index);
+                if (result == 0) return 0;
                 index += result;
 
                 result = utils_stringCopy((char *)buffer + index, bufferLen - index, REG_PATH_END);
