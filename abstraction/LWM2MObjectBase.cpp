@@ -1,7 +1,9 @@
 #include "LWM2MObjectBase.h"
 
-LWM2MObjectBase::LWM2MObjectBase(uint16_t objID) : _lwm2mObject() {
+LWM2MObjectBase::LWM2MObjectBase(lwm2m_context_t * context, uint16_t objID): _lwm2mObject() {
 
+	this->_context = context;
+	
     this->_lwm2mObject.objID = objID;
     this->_lwm2mObject.readFunc = &LWM2M_Read;
     this->_lwm2mObject.writeFunc = &LWM2M_Write;
@@ -9,6 +11,7 @@ LWM2MObjectBase::LWM2MObjectBase(uint16_t objID) : _lwm2mObject() {
     this->_lwm2mObject.discoverFunc = &LWM2M_Discover;
     this->_lwm2mObject.createFunc = &LWM2M_Create;
     this->_lwm2mObject.deleteFunc = &LWM2M_Delete;
+	
     this->_lwm2mObject.userData = this;
 
 }
@@ -59,13 +62,17 @@ uint8_t LWM2MObjectBase::LWM2M_Delete(uint16_t instanceId, lwm2m_object_t * obje
 
 }
 
+lwm2m_context_t * LWM2MObjectBase::GetLWM2MContext() {
+	return this->_context;
+}
+
 uint8_t LWM2MObjectBase::HandleInternalValueChange(lwm2m_data_t * dataArray, lwm2m_object_t * objectP) {
 	return COAP_405_METHOD_NOT_ALLOWED;
 }
 
-uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_context_t * lwm2mH, lwm2m_uri_t * uri, const char * value, size_t valueLength) {
+uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t * uri, const char * value, size_t valueLength) {
 	
-	lwm2m_object_t * refObject = (lwm2m_object_t *)LWM2M_LIST_FIND(lwm2mH->objectList, uri->objectId);
+	lwm2m_object_t * refObject = (lwm2m_object_t *)LWM2M_LIST_FIND(this->_context->objectList, uri->objectId);
 	lwm2m_object_t * object = this->GetLWM2MObject();
 	
 	if (object != refObject) {
@@ -99,7 +106,7 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_context_t * lwm2mH, lwm2m_uri_
 	}
 	
 	wd_log_info("LWM2MObjectBase -> Value changed");
-	lwm2m_resource_value_changed(lwm2mH, uri);
+	lwm2m_resource_value_changed(this->_context, uri);
 	
 	return result;
 	
