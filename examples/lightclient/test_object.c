@@ -17,6 +17,7 @@
  *    Axel Lorente - Please refer to git log
  *    Achim Kraus, Bosch Software Innovations GmbH - Please refer to git log
  *    Pascal Rieux - Please refer to git log
+ *    Ville Skyttä - Please refer to git log
  *    
  *******************************************************************************/
 
@@ -53,11 +54,11 @@
 /*
  * Implements an object for testing purpose
  *
- *                 Multiple
- * Object |  ID  | Instances | Mandatoty |
- *  Test  | 1024 |    Yes    |    No     |
+ *                  Multiple
+ * Object |  ID   | Instances | Mandatoty |
+ *  Test  | 31024 |    Yes    |    No     |
  *
- *  Ressources:
+ *  Resources:
  *              Supported    Multiple
  *  Name | ID | Operations | Instances | Mandatory |  Type   | Range | Units |      Description      |
  *  test |  1 |    R/W     |    No     |    Yes    | Integer | 0-255 |       |                       |
@@ -348,7 +349,7 @@ lwm2m_object_t * get_test_object(void)
 
         memset(testObj, 0, sizeof(lwm2m_object_t));
 
-        testObj->objID = 1024;
+        testObj->objID = 31024;
         for (i=0 ; i < 3 ; i++)
         {
             targetP = (prv_instance_t *)lwm2m_malloc(sizeof(prv_instance_t));

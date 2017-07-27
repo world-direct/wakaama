@@ -79,13 +79,13 @@ static int prv_textSerialize(lwm2m_data_t * dataP,
         char stringBuffer[11];
         size_t length;
         
-        length = utils_intToText(dataP->value.asObjLink.objectId, stringBuffer, 5);
+        length = utils_intToText(dataP->value.asObjLink.objectId, (uint8_t*)stringBuffer, 5);
         if (length == 0) return -1;
 
         stringBuffer[5] = ':';
         res = length + 1;
 
-        length = utils_intToText(dataP->value.asObjLink.objectInstanceId, stringBuffer + res, 5);
+        length = utils_intToText(dataP->value.asObjLink.objectInstanceId, (uint8_t*)stringBuffer + res, 5);
         if (length == 0) return -1;
 
         res += length;
@@ -99,6 +99,22 @@ static int prv_textSerialize(lwm2m_data_t * dataP,
     }
 
     case LWM2M_TYPE_OPAQUE:
+    {
+        size_t length;
+
+        length = utils_base64GetSize(dataP->value.asBuffer.length);
+        *bufferP = (uint8_t *)lwm2m_malloc(length);
+        if (*bufferP == NULL) return 0;
+        length = utils_base64Encode(dataP->value.asBuffer.buffer, dataP->value.asBuffer.length, *bufferP, length);
+        if (length == 0)
+        {
+            lwm2m_free(*bufferP);
+            *bufferP = NULL;
+            return 0;
+        }
+        return (int)length;
+    }
+
     case LWM2M_TYPE_UNDEFINED:
     default:
         return -1;
@@ -288,7 +304,7 @@ int lwm2m_data_decode_int(const lwm2m_data_t * dataP,
             utils_copyValue(&value, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
 
             *valueP = value;
-            result = 2;
+            result = 1;
             break;
         }
 
@@ -299,13 +315,13 @@ int lwm2m_data_decode_int(const lwm2m_data_t * dataP,
             utils_copyValue(&value, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
 
             *valueP = value;
-            result = 4;
+            result = 1;
             break;
         }
 
         case 8:
             utils_copyValue(valueP, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
-            result = 8;
+            result = 1;
             break;
 
         default:
@@ -361,13 +377,13 @@ int lwm2m_data_decode_float(const lwm2m_data_t * dataP,
             utils_copyValue(&temp, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
 
             *valueP = temp;
-            result = 4;
+            result = 1;
         }
         break;
 
         case 8:
             utils_copyValue(valueP, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
-            result = 8;
+            result = 1;
             break;
 
         default:
@@ -586,11 +602,13 @@ int lwm2m_data_serialize(lwm2m_uri_t * uriP,
         }
     }
 
-    if (*formatP == LWM2M_CONTENT_TEXT
-     && dataP->type == LWM2M_TYPE_OPAQUE)
+    if (*formatP == LWM2M_CONTENT_OPAQUE
+     && dataP->type != LWM2M_TYPE_OPAQUE)
     {
-        *formatP = LWM2M_CONTENT_OPAQUE;
+        LOG("Opaque format is reserved to opaque resources.");
+        return -1;
     }
+
     LOG_ARG("Final format: %s", STR_MEDIA_TYPE(*formatP));
 
     switch (*formatP)
