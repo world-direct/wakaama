@@ -144,6 +144,12 @@ static lwm2m_watcher_t * prv_getWatcher(lwm2m_context_t * contextP,
             return NULL;
         }
         memset(watcherP, 0, sizeof(lwm2m_watcher_t));
+		
+		if(serverP != NULL && serverP->defaultAttributes != NULL){
+			watcherP->parameters = lwm2m_malloc(sizeof(lwm2m_attributes_t));
+			memcpy(watcherP->parameters, serverP->defaultAttributes, sizeof(lwm2m_attributes_t));
+		}
+		
         watcherP->active = false;
         watcherP->server = serverP;
         watcherP->next = observedP->watcherList;

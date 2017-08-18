@@ -371,6 +371,20 @@ lwm2m_server_t * utils_findServer(lwm2m_context_t * contextP,
 
     return targetP;
 }
+
+lwm2m_server_t * utils_findServerByShortServerId(lwm2m_context_t * contextP, uint16_t shortServerId)
+{
+	lwm2m_server_t * targetP;
+
+	targetP = contextP->serverList;
+	while (targetP != NULL && targetP->shortID != shortServerId)
+	{
+		targetP = targetP->next;
+	}
+
+	return targetP;
+}
+
 #endif
 
 lwm2m_server_t * utils_findBootstrapServer(lwm2m_context_t * contextP,

@@ -3,6 +3,7 @@
 
 extern "C"{
     #include "liblwm2m.h"
+	#include "internals.h"
 	#include "wd_logging.h"
 }
 

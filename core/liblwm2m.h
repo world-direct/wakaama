@@ -457,6 +457,29 @@ struct _lwm2m_block1_data_
     size_t                block1bufferSize; // buffer size
     uint16_t              lastmid;          // mid of the last message received
 };
+	
+/*
+ * LWM2M Link Attributes
+ *
+ * Used for observation parameters.
+ *
+ */
+
+#define LWM2M_ATTR_FLAG_MIN_PERIOD      (uint8_t)0x01
+#define LWM2M_ATTR_FLAG_MAX_PERIOD      (uint8_t)0x02
+#define LWM2M_ATTR_FLAG_GREATER_THAN    (uint8_t)0x04
+#define LWM2M_ATTR_FLAG_LESS_THAN       (uint8_t)0x08
+#define LWM2M_ATTR_FLAG_STEP            (uint8_t)0x10
+
+typedef struct {
+	uint8_t     toSet;
+	uint8_t     toClear;
+	uint32_t    minPeriod;
+	uint32_t    maxPeriod;
+	double      greaterThan;
+	double      lessThan;
+	double      step;
+} lwm2m_attributes_t;
 
 typedef struct _lwm2m_server_
 {
@@ -471,6 +494,7 @@ typedef struct _lwm2m_server_
     char *                  location;
     bool                    dirty;
     lwm2m_block1_data_t *   block1Data;   // buffer to handle block1 data, should be replace by a list to support several block1 transfer by server.
+	lwm2m_attributes_t *	defaultAttributes;
 } lwm2m_server_t;
 
 
@@ -500,30 +524,6 @@ typedef struct _lwm2m_observation_
     lwm2m_result_callback_t callback;
     void *                  userData;
 } lwm2m_observation_t;
-
-/*
- * LWM2M Link Attributes
- *
- * Used for observation parameters.
- *
- */
-
-#define LWM2M_ATTR_FLAG_MIN_PERIOD      (uint8_t)0x01
-#define LWM2M_ATTR_FLAG_MAX_PERIOD      (uint8_t)0x02
-#define LWM2M_ATTR_FLAG_GREATER_THAN    (uint8_t)0x04
-#define LWM2M_ATTR_FLAG_LESS_THAN       (uint8_t)0x08
-#define LWM2M_ATTR_FLAG_STEP            (uint8_t)0x10
-
-typedef struct
-{
-    uint8_t     toSet;
-    uint8_t     toClear;
-    uint32_t    minPeriod;
-    uint32_t    maxPeriod;
-    double      greaterThan;
-    double      lessThan;
-    double      step;
-} lwm2m_attributes_t;
 
 /*
  * LWM2M Clients
