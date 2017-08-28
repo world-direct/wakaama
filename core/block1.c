@@ -40,6 +40,9 @@
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+#ifndef		COAP_BLOCK1_FIRMWARE_ONLY
+
 #include "internals.h"
 
 #include <stdlib.h>
@@ -151,3 +154,5 @@ void free_block1_buffer(lwm2m_block1_data_t * block1Data)
         lwm2m_free(block1Data);
     }
 }
+
+#endif
