@@ -350,6 +350,8 @@ lwm2m_media_type_t utils_convertMediaType(coap_content_type_t type)
         return LWM2M_CONTENT_JSON;
     case APPLICATION_LINK_FORMAT:
         return LWM2M_CONTENT_LINK;
+    case APPLICATION_JSON:
+	    return LWM2M_CONTENT_JSON;
 
     default:
         return LWM2M_CONTENT_TEXT;

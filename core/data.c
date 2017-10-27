@@ -479,6 +479,80 @@ void lwm2m_data_encode_objlink(uint16_t objectId,
     dataP->value.asObjLink.objectInstanceId = objectInstanceId;
 }
 
+static void lwm2m_reset_uri(lwm2m_uri_t * uri){
+	
+	if(uri == NULL){
+		return;
+	}
+	
+	uri->objectId = -1;
+	uri->instanceId = -1;
+	uri->resourceId = -1;
+	uri->flag = 0;
+	
+}
+
+void lwm2m_data_decode_objlink(const lwm2m_data_t * dataP, lwm2m_uri_t * uri){
+	
+	// check uri
+	if(uri == NULL){
+		return;
+	}
+	
+	// check type
+	if(dataP->type != LWM2M_TYPE_STRING){
+		lwm2m_reset_uri(uri);
+		return;
+	}
+	
+	// check min length
+	if(dataP->value.asBuffer.length < 3){
+		lwm2m_reset_uri(uri);
+		return;
+	}
+	
+	// format: <objectId>:<instanceId>
+	
+	// find ":"
+	int split_position = 0;
+	for(int i = 0; i < dataP->value.asBuffer.length; i++){
+		if(dataP->value.asBuffer.buffer[i] == ':'){
+			split_position = i;
+		}
+	}
+	
+	// check valid split
+	if(!(0 < split_position && split_position < dataP->value.asBuffer.length-1)){
+		lwm2m_reset_uri(uri);
+		return;
+	}
+	
+	int64_t int_val;
+	// parse objectId 
+	if(!utils_textToInt(
+			dataP->value.asBuffer.buffer, 
+			split_position, 
+			&int_val)){
+		lwm2m_reset_uri(uri);
+		return;
+	}
+	uri->objectId = (uint16_t)int_val;
+	uri->flag = LWM2M_URI_FLAG_OBJECT_ID;
+	
+	// parse instanceId
+	if(!utils_textToInt(
+			dataP->value.asBuffer.buffer+split_position+1, 
+			dataP->value.asBuffer.length - split_position - 1, 
+			&int_val)){
+		lwm2m_reset_uri(uri);
+		return;
+	}
+	uri->instanceId = (uint16_t)int_val;
+	uri->flag |= LWM2M_URI_FLAG_INSTANCE_ID;
+	
+}
+
+
 void lwm2m_data_include(lwm2m_data_t * subDataP,
                         size_t count,
                         lwm2m_data_t * dataP)
