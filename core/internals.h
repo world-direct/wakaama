@@ -333,6 +333,8 @@ int utils_textToFloat(uint8_t * buffer, int length, double * dataP);
 void utils_copyValue(void * dst, const void * src, size_t len);
 size_t utils_base64GetSize(size_t dataLen);
 size_t utils_base64Encode(uint8_t * dataP, size_t dataLen, uint8_t * bufferP, size_t bufferLen);
+size_t utils_base64GetDecodedSize(uint8_t * bufferP, size_t bufferLen);
+size_t utils_base64Decode(uint8_t * bufferP, size_t bufferLen, uint8_t * dataP, size_t dataLen);
 #ifdef LWM2M_CLIENT_MODE
 lwm2m_server_t * utils_findServer(lwm2m_context_t * contextP, void * fromSessionH);
 lwm2m_server_t * utils_findServerByShortServerId(lwm2m_context_t * contextP, uint16_t shortServerId);

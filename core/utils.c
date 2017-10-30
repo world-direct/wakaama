@@ -499,6 +499,21 @@ static void prv_encodeBlock(uint8_t input[3],
     output[3] = b64Alphabet[input[2] & 0x3F];
 }
 
+static inline bool is_base64(unsigned char c) {
+	return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+static inline int base64_find_index(char c){
+	
+	for(int i = 0; i<sizeof(b64Alphabet); i++){
+		if(b64Alphabet[i] == c){
+			return i;
+		}
+	}
+	return -1;
+	
+}
+
 size_t utils_base64GetSize(size_t dataLen)
 {
     size_t result_len;
@@ -552,6 +567,75 @@ size_t utils_base64Encode(uint8_t * dataP,
     }
 
     return result_len;
+}
+
+size_t utils_base64GetDecodedSize(uint8_t * bufferP, size_t bufferLen){
+
+	size_t result_len;
+
+	result_len = (bufferLen / 4) * 3;
+	if (bufferLen == 0 || bufferLen % 4){
+		return -1;
+	}
+	
+	for(int i = 1; i <= 2; i++){
+		if (bufferP[bufferLen - i] == PRV_B64_PADDING) {
+			result_len--;
+		}
+	}
+	
+	return result_len;
+	
+}
+
+size_t utils_base64Decode(uint8_t * bufferP, size_t bufferLen, uint8_t * dataP, size_t dataLen){
+
+	// http://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+	
+	int in_len = bufferLen;
+	int i = 0;
+	int j = 0;
+	int in_ = 0;
+	int out_ = 0;
+	unsigned char char_array_4[4];
+	unsigned char char_array_3[3];
+
+	while (in_len-- && ( bufferP[in_] != '=') && is_base64(bufferP[in_])) {
+		char_array_4[i++] = bufferP[in_]; 
+		in_++;
+		if (i ==4) {
+			
+			for (i = 0; i < 4; i++){
+				char_array_4[i] = base64_find_index(char_array_4[i]);
+			}
+
+			char_array_3[0] = ( char_array_4[0] << 2        ) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0x0f) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x03) << 6) +   char_array_4[3];
+
+			for (i = 0; (i < 3); i++){
+				dataP[out_++] = char_array_3[i];	
+			}
+			
+			i = 0;
+		}
+	}
+
+	if (i) {
+		for (j = 0; j < i; j++){
+			char_array_4[j] = base64_find_index(char_array_4[j]);
+		}
+
+		char_array_3[0] = (char_array_4[0] << 2) +			((char_array_4[1] & 0x30) >> 4);
+		char_array_3[1] = ((char_array_4[1] & 0xf) << 4) +	((char_array_4[2] & 0x3c) >> 2);
+
+		for (j = 0; (j < i - 1); j++){ 
+			dataP[out_++] = char_array_3[j];
+		}
+	}
+
+	return out_;
+	
 }
 
 lwm2m_data_type_t utils_depthToDatatype(uri_depth_t depth)
