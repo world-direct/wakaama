@@ -289,7 +289,9 @@ uint8_t dm_handleRequest(lwm2m_context_t * contextP,
                     }
                     coap_set_header_location_path(response, location_path);
 
-                    lwm2m_update_registration(contextP, 0, true);
+	                // Remove update to avoid congestion
+	                // Objects will be transferred on regular registration-updates
+                    // lwm2m_update_registration(contextP, 0, true);
                 }
             }
             else if (!LWM2M_URI_IS_SET_RESOURCE(uriP))
@@ -340,7 +342,9 @@ uint8_t dm_handleRequest(lwm2m_context_t * contextP,
                 result = object_delete(contextP, uriP);
                 if (result == COAP_202_DELETED)
                 {
-                    lwm2m_update_registration(contextP, 0, true);
+	                // Remove update to avoid congestion
+	                // Objects will be transferred on regular registration-updates
+                    //lwm2m_update_registration(contextP, 0, true);
                 }
             }
         }

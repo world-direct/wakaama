@@ -1312,7 +1312,8 @@ void registration_step(lwm2m_context_t * contextP,
             if (0 >= interval)
             {
                 LOG("Updating registration");
-                prv_updateRegistration(contextP, targetP, false);
+	            // Deliver all objects on regular registration-updates to avoid congestion on cummulated create-/delete-operations
+                prv_updateRegistration(contextP, targetP, true);
             }
             else if (interval < *timeoutP)
             {
