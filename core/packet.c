@@ -275,29 +275,9 @@ void lwm2m_handle_packet(lwm2m_context_t * contextP,
                     coap_get_header_block1(message, &block1_num, &block1_more, &block1_size, NULL);
                     LOG_ARG("Blockwise: block1 request NUM %u (SZX %u/ SZX Max%u) MORE %u", block1_num, block1_size, REST_MAX_CHUNK_SIZE, block1_more);
 
-	                lwm2m_uri_t * uriP;
-#ifdef LWM2M_CLIENT_MODE
-	                uriP = uri_decode(contextP->altPath, message->uri_path);
-#else
-	                uriP = uri_decode(NULL, message->uri_path);
-#endif
-	                
                     // handle block 1
-#ifdef	COAP_BLOCK1_FIRMWARE_ONLY
-	
-	                if (uriP->objectId == 9 &&
-	                	uriP->instanceId == 1 && 
-	                	uriP->resourceId == 2) {
-		                coap_error_code = coap_block1_handler(&serverP->block1Data, message->mid, message->payload, message->payload_len, block1_size, block1_num, block1_more, &complete_buffer, &complete_buffer_size);
-	                }
-	                else {
-		                coap_error_code = COAP_501_NOT_IMPLEMENTED;
-	                }
-					
-#else	                coap_error_code = coap_block1_handler(&serverP->block1Data, message->mid, message->payload, message->payload_len, block1_size, block1_num, block1_more, &complete_buffer, &complete_buffer_size);
-					
-#endif
-	                lwm2m_free(uriP);
+                    coap_error_code = coap_block1_handler(&serverP->block1Data, message->mid, message->payload, message->payload_len, block1_size, block1_num, block1_more, &complete_buffer, &complete_buffer_size);
+
                     // if payload is complete, replace it in the coap message.
                     if (coap_error_code == NO_ERROR)
                     {
@@ -320,6 +300,8 @@ void lwm2m_handle_packet(lwm2m_context_t * contextP,
             }
             if (coap_error_code==NO_ERROR)
             {
+                /* Save original payload pointer for later freeing. Payload in response may be updated. */
+                uint8_t *payload = response->payload;
                 if ( IS_OPTION(message, COAP_OPTION_BLOCK2) )
                 {
                     /* unchanged new_offset indicates that resource is unaware of blockwise transfer */
@@ -357,7 +339,7 @@ void lwm2m_handle_packet(lwm2m_context_t * contextP,
 
                 coap_error_code = message_send(contextP, response, fromSessionH);
 
-                lwm2m_free(response->payload);
+                lwm2m_free(payload);
                 response->payload = NULL;
                 response->payload_len = 0;
             }
@@ -460,4 +442,3 @@ uint8_t message_send(lwm2m_context_t * contextP,
 
     return result;
 }
-
