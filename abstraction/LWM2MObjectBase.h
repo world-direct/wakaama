@@ -24,7 +24,7 @@ class LWM2MObjectBase{
 		virtual uint8_t Create(uint16_t instanceId, int numData, lwm2m_data_t * dataArray, lwm2m_object_t * objectP) = 0;
 		virtual uint8_t Delete(uint16_t instanceId, lwm2m_object_t * objectP) = 0;
 	
-		virtual uint8_t HandleInternalValueChange(lwm2m_data_t * dataArray, lwm2m_object_t * objectP);
+		virtual uint8_t HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t * dataArray, lwm2m_object_t * objectP);
 		lwm2m_context_t * GetLWM2MContext();
 
     private:
