@@ -111,3 +111,16 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t * uri, const char * valu
 	return result;
 	
 }
+
+uint16_t LWM2MObjectBase::GetCurrentInstancesCount(){
+
+	lwm2m_list_t * head = this->GetLWM2MObject()->instanceList;
+	uint16_t count = 0;
+    while (head != NULL){
+		count++;
+		head = head->next;
+		// TODO: add safety-limit
+    }
+    return count;
+
+}

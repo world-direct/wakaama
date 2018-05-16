@@ -26,6 +26,7 @@ class LWM2MObjectBase{
 	
 		virtual uint8_t HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t * dataArray, lwm2m_object_t * objectP);
 		lwm2m_context_t * GetLWM2MContext();
+		uint16_t GetCurrentInstancesCount();
 
     private:
                 
