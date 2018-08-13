@@ -66,7 +66,7 @@ lwm2m_context_t * LWM2MObjectBase::GetLWM2MContext() {
 	return this->_context;
 }
 
-uint8_t LWM2MObjectBase::HandleInternalValueChange(lwm2m_data_t * dataArray, lwm2m_object_t * objectP) {
+uint8_t LWM2MObjectBase::HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t * dataArray, lwm2m_object_t * objectP) {
 	return COAP_405_METHOD_NOT_ALLOWED;
 }
 
@@ -95,7 +95,7 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t * uri, const char * valu
 	result = this->Write(uri->instanceId, 1, dataP, object);
 	
 	if (result == COAP_405_METHOD_NOT_ALLOWED) {
-		result = this->HandleInternalValueChange(dataP, object);
+		result = this->HandleInternalValueChange(uri->instanceId, dataP, object);
 	}
 	
 	lwm2m_data_free(1, dataP);
@@ -110,4 +110,17 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t * uri, const char * valu
 	
 	return result;
 	
+}
+
+uint16_t LWM2MObjectBase::GetCurrentInstancesCount(){
+
+	lwm2m_list_t * head = this->GetLWM2MObject()->instanceList;
+	uint16_t count = 0;
+    while (head != NULL){
+		count++;
+		head = head->next;
+		// TODO: add safety-limit
+    }
+    return count;
+
 }
