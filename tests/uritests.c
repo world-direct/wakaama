@@ -23,7 +23,7 @@
 
 static void test_uri_decode(void)
 {
-    lwm2m_uri_t* uri;
+    lwm2m_uri_t *uri;
     multi_option_t extraID = { .next = NULL, .is_static = 1, .len = 3, .data = (uint8_t *) "555" };
     multi_option_t rID = { .next = NULL, .is_static = 1, .len = 1, .data = (uint8_t *) "0" };
     multi_option_t iID = { .next = &rID, .is_static = 1, .len = 2, .data = (uint8_t *) "11" };
@@ -145,20 +145,20 @@ static void test_string_to_uri(void)
 }
 
 static struct TestTable table[] = {
-        { "test of uri_decode()", test_uri_decode },
-        { "test of lwm2m_stringToUri()", test_string_to_uri },
-        { NULL, NULL },
+    { "test of uri_decode()", test_uri_decode },
+    { "test of lwm2m_stringToUri()", test_string_to_uri },
+    { NULL, NULL },
 };
 
 CU_ErrorCode create_uri_suit()
 {
-   CU_pSuite pSuite = NULL;
+    CU_pSuite pSuite = NULL;
 
-   pSuite = CU_add_suite("Suite_URI", NULL, NULL);
-   if (NULL == pSuite) {
-      return CU_get_error();
-   }
+    pSuite = CU_add_suite("Suite_URI", NULL, NULL);
+    if (NULL == pSuite) {
+        return CU_get_error();
+    }
 
-   return add_tests(pSuite, table);
+    return add_tests(pSuite, table);
 }
 

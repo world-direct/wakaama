@@ -24,43 +24,44 @@
 #include "tests.h"
 
 // stub function
-void * lwm2m_connect_server(uint16_t secObjInstID,
-                            void * userData)
+void *lwm2m_connect_server(uint16_t secObjInstID,
+                           void *userData)
 {
     return (void *)secObjInstID;
 }
 
-void lwm2m_close_connection(void * sessionH,
-                            void * userData)
+void lwm2m_close_connection(void *sessionH,
+                            void *userData)
 {
     return;
 }
 
-CU_ErrorCode add_tests(CU_pSuite pSuite, struct TestTable* testTable)
+CU_ErrorCode add_tests(CU_pSuite pSuite, struct TestTable *testTable)
 {
     int index;
     for (index = 0; NULL != testTable && NULL != testTable[index].name; ++index) {
         if (NULL == CU_add_test(pSuite, testTable[index].name, testTable[index].function)) {
             fprintf(stderr, "Failed to add test %s\n", testTable[index].name);
             return CU_get_error();
-         }
+        }
     }
     return CUE_SUCCESS;
 }
 
 int main()
 {
-   /* initialize the CUnit test registry */
-   if (CUE_SUCCESS != CU_initialize_registry())
-      return CU_get_error();
+    /* initialize the CUnit test registry */
+    if (CUE_SUCCESS != CU_initialize_registry()) {
+        return CU_get_error();
+    }
 
     if (CUE_SUCCESS != create_tlv_json_suit()) {
-       goto exit;
-   }
+        goto exit;
+    }
 
-   CU_basic_set_mode(CU_BRM_VERBOSE);
-   CU_basic_run_tests();
+    CU_basic_set_mode(CU_BRM_VERBOSE);
+    CU_basic_run_tests();
 exit:
-   CU_cleanup_registry();
-   return CU_get_error();
+    CU_cleanup_registry();
+    return CU_get_error();
 }

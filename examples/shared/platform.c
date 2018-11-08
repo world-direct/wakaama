@@ -23,26 +23,26 @@
 
 #ifndef LWM2M_MEMORY_TRACE
 
-void * lwm2m_malloc(size_t s)
+void *lwm2m_malloc(size_t s)
 {
     return malloc(s);
 }
 
-void lwm2m_free(void * p)
+void lwm2m_free(void *p)
 {
     return free(p);
 }
 
-char * lwm2m_strdup(const char * str)
+char *lwm2m_strdup(const char *str)
 {
     return strdup(str);
 }
 
 #endif
 
-int lwm2m_strncmp(const char * s1,
-                     const char * s2,
-                     size_t n)
+int lwm2m_strncmp(const char *s1,
+                  const char *s2,
+                  size_t n)
 {
     return strncmp(s1, s2, n);
 }
@@ -51,15 +51,14 @@ time_t lwm2m_gettime(void)
 {
     struct timeval tv;
 
-    if (0 != gettimeofday(&tv, NULL))
-    {
+    if (0 != gettimeofday(&tv, NULL)) {
         return -1;
     }
 
     return tv.tv_sec;
 }
 
-void lwm2m_printf(const char * format, ...)
+void lwm2m_printf(const char *format, ...)
 {
     va_list ap;
 

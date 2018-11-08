@@ -12,12 +12,12 @@
  *
  * Contributors:
  *    Bosch Software Innovations GmbH - Please refer to git log
- *    
+ *
  *******************************************************************************/
 
 /*
  * This connectivity statistics object is optional and single instance only
- * 
+ *
  *  Resources:
  *
  *          Name         | ID | Oper. | Inst. | Mand.|  Type   | Range | Units | Description |
@@ -46,8 +46,7 @@
 #define RES_O_AVERAGE_MESSAGE_SIZE      5
 #define RES_M_START_OR_RESET            6
 
-typedef struct
-{
+typedef struct {
     int64_t   smsTxCounter;
     int64_t   smsRxCounter;
     int64_t   txDataByte;             // report in kByte!
@@ -58,85 +57,82 @@ typedef struct
     bool      collectDataStarted;
 } conn_s_data_t;
 
-static uint8_t prv_set_tlv(lwm2m_data_t * dataP, conn_s_data_t * connStDataP)
+static uint8_t prv_set_tlv(lwm2m_data_t *dataP, conn_s_data_t *connStDataP)
 {
     switch (dataP->id) {
-    case RES_O_SMS_TX_COUNTER:
-        lwm2m_data_encode_int(connStDataP->smsTxCounter, dataP);
-        return COAP_205_CONTENT;
-        break;
-    case RES_O_SMS_RX_COUNTER:
-        lwm2m_data_encode_int(connStDataP->smsRxCounter, dataP);
-        return COAP_205_CONTENT;
-        break;
-    case RES_O_TX_DATA:
-        lwm2m_data_encode_int(connStDataP->txDataByte/1024, dataP);
-        return COAP_205_CONTENT;
-        break;
-    case RES_O_RX_DATA:
-        lwm2m_data_encode_int(connStDataP->rxDataByte/1024, dataP);
-        return COAP_205_CONTENT;
-        break;
-    case RES_O_MAX_MESSAGE_SIZE:
-        lwm2m_data_encode_int(connStDataP->maxMessageSize, dataP);
-        return COAP_205_CONTENT;
-        break;
-    case RES_O_AVERAGE_MESSAGE_SIZE:
-        lwm2m_data_encode_int(connStDataP->avrMessageSize, dataP);
-        return COAP_205_CONTENT;
-        break;
-    default:
-        return COAP_404_NOT_FOUND ;
+        case RES_O_SMS_TX_COUNTER:
+            lwm2m_data_encode_int(connStDataP->smsTxCounter, dataP);
+            return COAP_205_CONTENT;
+            break;
+        case RES_O_SMS_RX_COUNTER:
+            lwm2m_data_encode_int(connStDataP->smsRxCounter, dataP);
+            return COAP_205_CONTENT;
+            break;
+        case RES_O_TX_DATA:
+            lwm2m_data_encode_int(connStDataP->txDataByte / 1024, dataP);
+            return COAP_205_CONTENT;
+            break;
+        case RES_O_RX_DATA:
+            lwm2m_data_encode_int(connStDataP->rxDataByte / 1024, dataP);
+            return COAP_205_CONTENT;
+            break;
+        case RES_O_MAX_MESSAGE_SIZE:
+            lwm2m_data_encode_int(connStDataP->maxMessageSize, dataP);
+            return COAP_205_CONTENT;
+            break;
+        case RES_O_AVERAGE_MESSAGE_SIZE:
+            lwm2m_data_encode_int(connStDataP->avrMessageSize, dataP);
+            return COAP_205_CONTENT;
+            break;
+        default:
+            return COAP_404_NOT_FOUND ;
     }
 }
 
-static uint8_t prv_read(uint16_t instanceId, int * numDataP, lwm2m_data_t** dataArrayP, lwm2m_object_t * objectP)
+static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     uint8_t result;
     int i;
 
     // this is a single instance object
-    if (instanceId != 0)
-    {
+    if (instanceId != 0) {
         return COAP_404_NOT_FOUND ;
     }
 
     // is the server asking for the full object ?
-    if (*numDataP == 0)
-    {
+    if (*numDataP == 0) {
         uint16_t resList[] = {
-                RES_O_SMS_TX_COUNTER,
-                RES_O_SMS_RX_COUNTER,
-                RES_O_TX_DATA,
-                RES_O_RX_DATA,
-                RES_O_MAX_MESSAGE_SIZE,
-                RES_O_AVERAGE_MESSAGE_SIZE
+            RES_O_SMS_TX_COUNTER,
+            RES_O_SMS_RX_COUNTER,
+            RES_O_TX_DATA,
+            RES_O_RX_DATA,
+            RES_O_MAX_MESSAGE_SIZE,
+            RES_O_AVERAGE_MESSAGE_SIZE
         };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
-        if (*dataArrayP == NULL)
+        if (*dataArrayP == NULL) {
             return COAP_500_INTERNAL_SERVER_ERROR ;
+        }
         *numDataP = nbRes;
-        for (i = 0; i < nbRes; i++)
-        {
+        for (i = 0; i < nbRes; i++) {
             (*dataArrayP)[i].id = resList[i];
         }
     }
 
     i = 0;
-    do
-    {
-        result = prv_set_tlv((*dataArrayP) + i, (conn_s_data_t*) (objectP->userData));
+    do {
+        result = prv_set_tlv((*dataArrayP) + i, (conn_s_data_t *)(objectP->userData));
         i++;
-    } while (i < *numDataP && result == COAP_205_CONTENT );
+    } while (i < *numDataP && result == COAP_205_CONTENT);
 
     return result;
 }
 
-static void prv_resetCounter(lwm2m_object_t* objectP, bool start)
+static void prv_resetCounter(lwm2m_object_t *objectP, bool start)
 {
-    conn_s_data_t *myData = (conn_s_data_t*) objectP->userData;
+    conn_s_data_t *myData = (conn_s_data_t *) objectP->userData;
     myData->smsTxCounter        = 0;
     myData->smsRxCounter        = 0;
     myData->txDataByte          = 0;
@@ -148,70 +144,73 @@ static void prv_resetCounter(lwm2m_object_t* objectP, bool start)
 }
 
 static uint8_t prv_exec(uint16_t instanceId, uint16_t resourceId,
-                        uint8_t * buffer, int length, lwm2m_object_t * objectP)
+                        uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
     // this is a single instance object
-    if (instanceId != 0)
-    {
+    if (instanceId != 0) {
         return COAP_404_NOT_FOUND;
     }
 
-    if (length != 0) return COAP_400_BAD_REQUEST;
+    if (length != 0) {
+        return COAP_400_BAD_REQUEST;
+    }
 
-    switch (resourceId)
-    {
-    case RES_M_START_OR_RESET:
-        prv_resetCounter(objectP, true);
-        return COAP_204_CHANGED;
-    default:
-        return COAP_405_METHOD_NOT_ALLOWED;
+    switch (resourceId) {
+        case RES_M_START_OR_RESET:
+            prv_resetCounter(objectP, true);
+            return COAP_204_CHANGED;
+        default:
+            return COAP_405_METHOD_NOT_ALLOWED;
     }
 }
 
-void conn_s_updateTxStatistic(lwm2m_object_t * objectP, uint16_t txDataByte, bool smsBased)
+void conn_s_updateTxStatistic(lwm2m_object_t *objectP, uint16_t txDataByte, bool smsBased)
 {
-    conn_s_data_t* myData = (conn_s_data_t*) (objectP->userData);
-    if (myData->collectDataStarted)
-    {
+    conn_s_data_t *myData = (conn_s_data_t *)(objectP->userData);
+    if (myData->collectDataStarted) {
         myData->txDataByte += txDataByte;
         myData->messageCount++;
-        myData->avrMessageSize = (myData->txDataByte+myData->rxDataByte) /
-                                  myData->messageCount;
-        if (txDataByte > myData->maxMessageSize)
+        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) /
+                                 myData->messageCount;
+        if (txDataByte > myData->maxMessageSize) {
             myData->maxMessageSize = txDataByte;
-        if (smsBased) myData->smsTxCounter++;
+        }
+        if (smsBased) {
+            myData->smsTxCounter++;
+        }
     }
 }
 
-void conn_s_updateRxStatistic(lwm2m_object_t * objectP, uint16_t rxDataByte, bool smsBased)
+void conn_s_updateRxStatistic(lwm2m_object_t *objectP, uint16_t rxDataByte, bool smsBased)
 {
-    conn_s_data_t* myData = (conn_s_data_t*) (objectP->userData);
-    if (myData->collectDataStarted)
-    {
+    conn_s_data_t *myData = (conn_s_data_t *)(objectP->userData);
+    if (myData->collectDataStarted) {
         myData->rxDataByte += rxDataByte;
         myData->messageCount++;
-        myData->avrMessageSize = (myData->txDataByte+myData->rxDataByte) /
-                                  myData->messageCount;
-        if (rxDataByte > myData->maxMessageSize)
+        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) /
+                                 myData->messageCount;
+        if (rxDataByte > myData->maxMessageSize) {
             myData->maxMessageSize = rxDataByte;
+        }
         myData->txDataByte += rxDataByte;
-        if (smsBased) myData->smsRxCounter++;
+        if (smsBased) {
+            myData->smsRxCounter++;
+        }
     }
 }
 
 
-lwm2m_object_t * get_object_conn_s(void)
+lwm2m_object_t *get_object_conn_s(void)
 {
     /*
      * The get_object_conn_s() function create the object itself and return
      * a pointer to the structure that represent it.
      */
-    lwm2m_object_t * connObj;
+    lwm2m_object_t *connObj;
 
     connObj = (lwm2m_object_t *) lwm2m_malloc(sizeof(lwm2m_object_t));
 
-    if (NULL != connObj)
-    {
+    if (NULL != connObj) {
         memset(connObj, 0, sizeof(lwm2m_object_t));
 
         /*
@@ -220,11 +219,9 @@ lwm2m_object_t * get_object_conn_s(void)
          */
         connObj->objID = LWM2M_CONN_STATS_OBJECT_ID;
         connObj->instanceList = lwm2m_malloc(sizeof(lwm2m_list_t));
-        if (NULL != connObj->instanceList)
-        {
+        if (NULL != connObj->instanceList) {
             memset(connObj->instanceList, 0, sizeof(lwm2m_list_t));
-        }
-        else {
+        } else {
             lwm2m_free(connObj);
             return NULL;
         }
@@ -243,12 +240,9 @@ lwm2m_object_t * get_object_conn_s(void)
          * Also some user data can be stored in the object with a private
          * structure containing the needed variables.
          */
-        if (NULL != connObj->userData)
-        {
+        if (NULL != connObj->userData) {
             prv_resetCounter(connObj, false);
-        }
-        else
-        {
+        } else {
             lwm2m_free(connObj);
             connObj = NULL;
         }
@@ -256,7 +250,7 @@ lwm2m_object_t * get_object_conn_s(void)
     return connObj;
 }
 
-void free_object_conn_s(lwm2m_object_t * objectP)
+void free_object_conn_s(lwm2m_object_t *objectP)
 {
     lwm2m_free(objectP->userData);
     lwm2m_list_free(objectP->instanceList);

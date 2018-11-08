@@ -13,7 +13,7 @@
  * Contributors:
  *    David Navarro, Intel Corporation - initial API and implementation
  *    David Gräff - Convert to test case
- *    
+ *
  *******************************************************************************/
 
 #include "liblwm2m.h"
@@ -30,70 +30,61 @@
 #include "tests.h"
 #include "CUnit/Basic.h"
 
-static void test_data(const char * uriStr,
-                        lwm2m_media_type_t format,
-                        lwm2m_data_t * tlvP,
-                        int size,
-                        const char * id)
+static void test_data(const char *uriStr,
+                      lwm2m_media_type_t format,
+                      lwm2m_data_t *tlvP,
+                      int size,
+                      const char *id)
 {
     lwm2m_uri_t uri;
-    uint8_t * buffer;
+    uint8_t *buffer;
     int length;
-    
-    if (uriStr != NULL)
-    {
+
+    if (uriStr != NULL) {
         lwm2m_stringToUri(uriStr, strlen(uriStr), &uri);
     }
 
-    if (tlvP[0].type != LWM2M_TYPE_OBJECT)
-    {
+    if (tlvP[0].type != LWM2M_TYPE_OBJECT) {
         length = lwm2m_data_serialize((uriStr != NULL) ? &uri : NULL, size, tlvP, &format, &buffer);
-        if (length <= 0)
-        {
+        if (length <= 0) {
             printf("(Serialize lwm2m_data_t %s to %s failed.)\t", id, format == LWM2M_CONTENT_JSON ? "JSON" : "TLV");
             //dump_data_t(stdout, size, tlvP, 0);
             CU_TEST_FATAL(CU_FALSE);
-        }
-        else
-        {
+        } else {
             lwm2m_free(buffer);
         }
     }
 }
 
-static void test_data_and_compare(const char * uriStr,
-                        lwm2m_media_type_t format,
-                        lwm2m_data_t * tlvP,
-                        int size,
-                        const char * id,
-                        const uint8_t* original_buffer,
-                        size_t original_length)
+static void test_data_and_compare(const char *uriStr,
+                                  lwm2m_media_type_t format,
+                                  lwm2m_data_t *tlvP,
+                                  int size,
+                                  const char *id,
+                                  const uint8_t *original_buffer,
+                                  size_t original_length)
 {
     lwm2m_uri_t uri;
-    uint8_t * buffer;
+    uint8_t *buffer;
     size_t length;
-    
-    if (uriStr != NULL)
-    {
+
+    if (uriStr != NULL) {
         lwm2m_stringToUri(uriStr, strlen(uriStr), &uri);
     }
 
     length = lwm2m_data_serialize((uriStr != NULL) ? &uri : NULL, size, tlvP, &format, &buffer);
-    if (length <= 0)
-    {
+    if (length <= 0) {
         printf("(Serialize lwm2m_data_t %s to TLV failed.)\t", id);
         //dump_data_t(stdout, size, tlvP, 0);
         CU_TEST_FATAL(CU_FALSE);
         return;
     }
 
-    if (format != LWM2M_CONTENT_JSON)
-    {
+    if (format != LWM2M_CONTENT_JSON) {
         CU_ASSERT_EQUAL(original_length, length);
 
         if ((original_length != length) ||
-            (memcmp(original_buffer, buffer, length) != 0))
-        {
+                (memcmp(original_buffer, buffer, length) != 0)) {
             printf("Comparing buffer after parse/serialize failed for %s:\n", id);
             output_buffer(stdout, buffer, length, 0);
             printf("\ninstead of:\n");
@@ -108,22 +99,17 @@ static void test_data_and_compare(const char * uriStr,
 // Hack: Due to the TLV format does not store data type information,
 // all dataTypes are undefined after parsing. The json serializer does not work with undefined
 // data types, therefore hardcode all objects to be strings.
-static void make_all_objects_string_types(lwm2m_data_t * tlvP, int size)
+static void make_all_objects_string_types(lwm2m_data_t *tlvP, int size)
 {
     int i;
 
-    for (i=0 ; i<size ; ++i)
-    {
-        if (tlvP[i].type == LWM2M_TYPE_OPAQUE)
-        {
+    for (i = 0 ; i < size ; ++i) {
+        if (tlvP[i].type == LWM2M_TYPE_OPAQUE) {
             tlvP[i].type = LWM2M_TYPE_STRING;
-        }
-        else if (tlvP[i].type == LWM2M_TYPE_MULTIPLE_RESOURCE)
-        {
+        } else if (tlvP[i].type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
             unsigned int j;
 
-            for (j = 0; j < tlvP[i].value.asChildren.count; ++j)
-            {
+            for (j = 0; j < tlvP[i].value.asChildren.count; ++j) {
                 tlvP[i].value.asChildren.array[j].type = LWM2M_TYPE_STRING;
             }
         }
@@ -138,67 +124,64 @@ static void make_all_objects_string_types(lwm2m_data_t * tlvP, int size)
  * @param format The format of the testBuf. Maybe LWM2M_CONTENT_TLV or LWM2M_CONTENT_JSON at the moment.
  * @param id The test object id for debug out.
  */
-static void test_raw(const char * uriStr,
-                     const uint8_t * testBuf,
+static void test_raw(const char *uriStr,
+                     const uint8_t *testBuf,
                      size_t testLen,
                      lwm2m_media_type_t format,
-                     const char * id)
+                     const char *id)
 {
-    lwm2m_data_t * tlvP;
+    lwm2m_data_t *tlvP;
     lwm2m_uri_t uri;
     int size;
 
-    if (uriStr != NULL)
-    {
+    if (uriStr != NULL) {
         lwm2m_stringToUri(uriStr, strlen(uriStr), &uri);
     }
 
     size = lwm2m_data_parse((uriStr != NULL) ? &uri : NULL, testBuf, testLen, format, &tlvP);
-    if (size < 0)
-    {
+    if (size < 0) {
         printf("(Parsing %s from %s failed.)\t", id, format == LWM2M_CONTENT_JSON ? "JSON" : "TLV");
     }
-    CU_ASSERT_TRUE_FATAL(size>0);
+    CU_ASSERT_TRUE_FATAL(size > 0);
 
     // Serialize to the same format and compare to the input buffer
     test_data_and_compare(uriStr, format, tlvP, size, id, testBuf, testLen);
 
     // Serialize to the TLV format
     // the reverse is not possible as TLV format loses the data type information
-    if (format == LWM2M_CONTENT_JSON)
-    {
+    if (format == LWM2M_CONTENT_JSON) {
         test_data(uriStr, LWM2M_CONTENT_TLV, tlvP, size, id);
     }
 }
 
-static void test_raw_expected(const char * uriStr,
-                              const uint8_t * testBuf,
+static void test_raw_expected(const char *uriStr,
+                              const uint8_t *testBuf,
                               size_t testLen,
-                              const char * expectBuf,
+                              const char *expectBuf,
                               size_t expectLen,
                               lwm2m_media_type_t format,
-                              const char * id)
+                              const char *id)
 {
-    lwm2m_data_t * tlvP;
+    lwm2m_data_t *tlvP;
     lwm2m_uri_t uri;
     int size;
-    
-    if (uriStr != NULL)
-    {
+
+    if (uriStr != NULL) {
         lwm2m_stringToUri(uriStr, strlen(uriStr), &uri);
     }
 
     size = lwm2m_data_parse((uriStr != NULL) ? &uri : NULL, testBuf, testLen, format, &tlvP);
-    CU_ASSERT_TRUE_FATAL(size>0);
+    CU_ASSERT_TRUE_FATAL(size > 0);
 
     // Serialize to the same format and compare to the input buffer
-    test_data_and_compare(uriStr, format, tlvP, size, id, (uint8_t*)expectBuf, expectLen);
+    test_data_and_compare(uriStr, format, tlvP, size, id, (uint8_t *)expectBuf, expectLen);
 
     // Serialize to the other format respectively.
-    if (format == LWM2M_CONTENT_TLV)
+    if (format == LWM2M_CONTENT_TLV) {
         test_data(uriStr, LWM2M_CONTENT_JSON, tlvP, size, id);
-    else if (format == LWM2M_CONTENT_JSON)
+    } else if (format == LWM2M_CONTENT_JSON) {
         test_data(uriStr, LWM2M_CONTENT_TLV, tlvP, size, id);
+    }
 }
 
 static void test_1(void)
@@ -206,11 +189,11 @@ static void test_1(void)
     const uint8_t buffer[] = {0x03, 0x0A, 0xC1, 0x01, 0x14, 0x03, 0x0B, 0xC1, 0x01, 0x15, 0x03, 0x0C, 0xC1, 0x01, 0x16};
     int testLen = sizeof(buffer);
     lwm2m_media_type_t format = LWM2M_CONTENT_TLV;
-    lwm2m_data_t * tlvP;
+    lwm2m_data_t *tlvP;
     int size = lwm2m_data_parse(NULL, buffer, testLen, format, &tlvP);
-    CU_ASSERT_TRUE_FATAL(size>0);
+    CU_ASSERT_TRUE_FATAL(size > 0);
     // Serialize to the same format and compare to the input buffer
-    test_data_and_compare(NULL, format, tlvP, size, "1", (uint8_t*)buffer, testLen);
+    test_data_and_compare(NULL, format, tlvP, size, "1", (uint8_t *)buffer, testLen);
 
 }
 
@@ -225,13 +208,14 @@ static void test_2(void)
         0x08, 0x42, 0x00, 0x0E, 0xD8, 0x42, 0x01, 0x13, 0x88, 0x87, 0x08, 0x41, 0x00, 0x7D, 0x42,
         0x01, 0x03, 0x84, 0xC1, 0x09, 0x64, 0xC1, 0x0A, 0x0F, 0x83, 0x0B, 0x41, 0x00, 0x00, 0xC4,
         0x0D, 0x51, 0x82, 0x42, 0x8F, 0xC6, 0x0E, 0x2B, 0x30, 0x32, 0x3A, 0x30, 0x30, 0xC1, 0x0F,
-        0x55};
+        0x55
+    };
     test_raw(NULL, buffer, sizeof(buffer), LWM2M_CONTENT_TLV, "2");
 }
 
 static void test_3(void)
 {
-    const char * buffer = "{\"e\":[                                              \
+    const char *buffer = "{\"e\":[                                              \
                          {\"n\":\"0\",\"sv\":\"Open Mobile Alliance\"},      \
                          {\"n\":\"1\",\"sv\":\"Lightweight M2M Client\"},    \
                          {\"n\":\"2\",\"sv\":\"345000123\"},                 \
@@ -254,7 +238,7 @@ static void test_3(void)
 
 static void test_4(void)
 {
-    const char * buffer = "{\"e\":[                                      \
+    const char *buffer = "{\"e\":[                                      \
                          {\"n\":\"0\",\"sv\":\"a \\\"test\\\"\"},   \
                          {\"n\":\"1\",\"v\":2015},                  \
                          {\"n\":\"2/0\",\"bv\":true},               \
@@ -265,7 +249,7 @@ static void test_4(void)
 
 static void test_5(void)
 {
-    const char * buffer = "{\"bn\" : \"/65/543/\",                \
+    const char *buffer = "{\"bn\" : \"/65/543/\",                \
                        \"e\":[                              \
                          {    \"n\" :   \"0\",              \
                             \"sv\":\"LWM2M\"},              \
@@ -275,7 +259,7 @@ static void test_5(void)
                       }";
     // We do a string comparison, therefore first n and then v in this order have to appear,
     // because that is the order that serialize will output.
-    const char * expect = "{\"bn\" : \"/65/543/\",\"e\":[                              \
+    const char *expect = "{\"bn\" : \"/65/543/\",\"e\":[                              \
                          {  \"n\" :   \"0\", \"sv\":\"LWM2M\"},  \
                          {\"n\":\"1\", \"v\":2015},         \
                          { \"n\":\"2/0\", \"bv\":true},   \
@@ -286,7 +270,7 @@ static void test_5(void)
 
 static void test_6(void)
 {
-    const char * buffer = "{\"bn\" : \"/2/3\", \
+    const char *buffer = "{\"bn\" : \"/2/3\", \
                             \"e\":[            \
                                 {\"n\":\"/0\",\"v\":1234}]   \
                            }";
@@ -296,7 +280,7 @@ static void test_6(void)
 
 static void test_7(void)
 {
-    const char * buffer = "{\"e\":[                              \
+    const char *buffer = "{\"e\":[                              \
                          {\"n\":\"1\",\"v\":1234},          \
                          {\"n\":\"3\",\"v\":56.789},        \
                          {\"n\":\"2/0\",\"v\":0.23},        \
@@ -307,7 +291,7 @@ static void test_7(void)
 
     // We do a string comparison. Because parsing+serialization changes double value
     // precision, we expect a slightly different output than input.
-    const char * expect = "{\"bn\":\"/12/0/\",\"e\":[{\"n\":\"1\",\"v\":1234},{\"n\":\"3\",\"v\":56.789},{\"n\":\"2/0\",\"v\":0.23},{\"n\":\"2/1\",\"v\":-52.0005999}]}";
+    const char *expect = "{\"bn\":\"/12/0/\",\"e\":[{\"n\":\"1\",\"v\":1234},{\"n\":\"3\",\"v\":56.789},{\"n\":\"2/0\",\"v\":0.23},{\"n\":\"2/1\",\"v\":-52.0005999}]}";
 
     test_raw_expected(NULL, (uint8_t *)buffer, strlen(buffer), expect, strlen(expect), LWM2M_CONTENT_JSON, "7a");
     test_raw_expected("/12", (uint8_t *)buffer, strlen(buffer), expect, strlen(expect), LWM2M_CONTENT_JSON, "7b");
@@ -317,7 +301,7 @@ static void test_7(void)
 
 static void test_8(void)
 {
-    const char * buffer = "{ \"bn\":\"/\",                                       \
+    const char *buffer = "{ \"bn\":\"/\",                                       \
                         \"e\":[                                             \
                           {\"n\":\"34/0/1\",\"sv\":\"8613800755500\"},      \
                           {\"n\":\"34/0/2\",\"v\":1},                       \
@@ -334,7 +318,7 @@ static void test_8(void)
 
 static void test_9(void)
 {
-    const char * buffer = "{ \"bn\":\"/\",                                       \
+    const char *buffer = "{ \"bn\":\"/\",                                       \
                         \"e\":[                                             \
                           {\"n\":\"34/0/0/0\",\"ov\":\"66:0\"},             \
                           {\"n\":\"34/0/0/1\",\"ov\":\"66:1\"},             \
@@ -354,11 +338,10 @@ static void test_9(void)
 }
 static void test_10(void)
 {
-    lwm2m_data_t * data1 = lwm2m_data_new(17);
+    lwm2m_data_t *data1 = lwm2m_data_new(17);
     int i;
 
-    for (i = 0; i < 17; i++)
-    {
+    for (i = 0; i < 17; i++) {
         data1[i].id = i;
     }
 
@@ -385,29 +368,29 @@ static void test_10(void)
 }
 
 static struct TestTable table[] = {
-        { "test of test_1()", test_1 },
-        { "test of test_2()", test_2 },
-        { "test of test_3()", test_3 },
-        { "test of test_4()", test_4 },
-        { "test of test_5()", test_5 },
-        { "test of test_6()", test_6 },
-        { "test of test_7()", test_7 },
-        { "test of test_8()", test_8 },
-        { "test of test_9()", test_9 },
-        { "test of test_10()", test_10 },
-        { NULL, NULL },
+    { "test of test_1()", test_1 },
+    { "test of test_2()", test_2 },
+    { "test of test_3()", test_3 },
+    { "test of test_4()", test_4 },
+    { "test of test_5()", test_5 },
+    { "test of test_6()", test_6 },
+    { "test of test_7()", test_7 },
+    { "test of test_8()", test_8 },
+    { "test of test_9()", test_9 },
+    { "test of test_10()", test_10 },
+    { NULL, NULL },
 };
 
 CU_ErrorCode create_tlv_json_suit()
 {
-   CU_pSuite pSuite = NULL;
+    CU_pSuite pSuite = NULL;
 
-   pSuite = CU_add_suite("Suite_TLV_JSON", NULL, NULL);
-   if (NULL == pSuite) {
-      return CU_get_error();
-   }
+    pSuite = CU_add_suite("Suite_TLV_JSON", NULL, NULL);
+    if (NULL == pSuite) {
+        return CU_get_error();
+    }
 
-   return add_tests(pSuite, table);
+    return add_tests(pSuite, table);
 }
 
 

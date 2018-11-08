@@ -44,22 +44,20 @@
 #define CMD_STATUS_OK   2
 #define CMD_STATUS_FAIL 3
 
-typedef struct _endpoint_
-{
-    struct _endpoint_ * next;
-    char *          name;
-    void *          handle;
-    bs_command_t *  cmdList;
+typedef struct _endpoint_ {
+    struct _endpoint_ *next;
+    char           *name;
+    void           *handle;
+    bs_command_t   *cmdList;
     uint8_t         status;
 } endpoint_t;
 
-typedef struct
-{
+typedef struct {
     int               sock;
-    connection_t *    connList;
-    lwm2m_context_t * lwm2mH;
-    bs_info_t *       bsInfo;
-    endpoint_t *      endpointList;
+    connection_t     *connList;
+    lwm2m_context_t *lwm2mH;
+    bs_info_t        *bsInfo;
+    endpoint_t       *endpointList;
     int               addressFamily;
 } internal_data_t;
 
@@ -71,8 +69,8 @@ typedef struct
 
 static int g_quit = 0;
 
-static void prv_quit(char * buffer,
-                     void * user_data)
+static void prv_quit(char *buffer,
+                     void *user_data)
 {
     g_quit = 1;
 }
@@ -82,8 +80,8 @@ void handle_sigint(int signum)
     prv_quit(NULL, NULL);
 }
 
-void print_usage(char * filename,
-                 char * port)
+void print_usage(char *filename,
+                 char *port)
 {
     fprintf(stdout, "Usage: bootstap_server [OPTION]\r\n");
     fprintf(stderr, "Launch a LWM2M Bootstrap Server.\r\n\n");
@@ -94,69 +92,63 @@ void print_usage(char * filename,
     fprintf(stdout, "\r\n");
 }
 
-static void prv_print_uri(FILE * fd,
-                          lwm2m_uri_t * uriP)
+static void prv_print_uri(FILE *fd,
+                          lwm2m_uri_t *uriP)
 {
     fprintf(fd, "/");
-    if (uriP != NULL)
-    {
+    if (uriP != NULL) {
         fprintf(fd, "%hu", uriP->objectId);
-        if (LWM2M_URI_IS_SET_INSTANCE(uriP))
-        {
+        if (LWM2M_URI_IS_SET_INSTANCE(uriP)) {
             fprintf(fd, "/%d", uriP->instanceId);
-            if (LWM2M_URI_IS_SET_RESOURCE(uriP))
+            if (LWM2M_URI_IS_SET_RESOURCE(uriP)) {
                 fprintf(fd, "/%d", uriP->resourceId);
+            }
         }
     }
 }
-static void prv_endpoint_free(endpoint_t * endP)
+static void prv_endpoint_free(endpoint_t *endP)
 {
-    if (endP != NULL)
-    {
-        if (endP->name != NULL) free(endP->name);
+    if (endP != NULL) {
+        if (endP->name != NULL) {
+            free(endP->name);
+        }
         free(endP);
     }
 }
 
-static endpoint_t * prv_endpoint_find(internal_data_t * dataP,
-                                      void * sessionH)
+static endpoint_t *prv_endpoint_find(internal_data_t *dataP,
+                                     void *sessionH)
 {
-    endpoint_t * endP;
+    endpoint_t *endP;
 
     endP = dataP->endpointList;
 
     while (endP != NULL
-        && endP->handle != sessionH)
-    {
+            && endP->handle != sessionH) {
         endP = endP->next;
     }
 
     return endP;
 }
 
-static endpoint_t * prv_endpoint_new(internal_data_t * dataP,
-                                     void * sessionH)
+static endpoint_t *prv_endpoint_new(internal_data_t *dataP,
+                                    void *sessionH)
 {
-    endpoint_t * endP;
+    endpoint_t *endP;
 
     endP = prv_endpoint_find(dataP, sessionH);
-    if (endP != NULL)
-    {
+    if (endP != NULL) {
         // delete previous state for the endpoint
-        endpoint_t * parentP;
+        endpoint_t *parentP;
 
         parentP = dataP->endpointList;
         while (parentP != NULL
-            && parentP->next != endP)
-        {
+                && parentP->next != endP) {
             parentP = parentP->next;
         }
-        if (parentP != NULL)
-        {
+        if (parentP != NULL) {
             parentP->next = endP->next;
-        }
-        else
-        {
+        } else {
             dataP->endpointList = endP->next;
         }
         prv_endpoint_free(endP);
@@ -166,37 +158,31 @@ static endpoint_t * prv_endpoint_new(internal_data_t * dataP,
     return endP;
 }
 
-static void prv_endpoint_clean(internal_data_t * dataP)
+static void prv_endpoint_clean(internal_data_t *dataP)
 {
-    endpoint_t * endP;
-    endpoint_t * parentP;
+    endpoint_t *endP;
+    endpoint_t *parentP;
 
     while (dataP->endpointList != NULL
-        && (dataP->endpointList->cmdList == NULL
-         || dataP->endpointList->status == CMD_STATUS_FAIL))
-    {
+            && (dataP->endpointList->cmdList == NULL
+                || dataP->endpointList->status == CMD_STATUS_FAIL)) {
         endP = dataP->endpointList->next;
         prv_endpoint_free(dataP->endpointList);
         dataP->endpointList = endP;
     }
 
     parentP = dataP->endpointList;
-    if (parentP != NULL)
-    {
+    if (parentP != NULL) {
         endP = dataP->endpointList->next;
-        while(endP != NULL)
-        {
-            endpoint_t * nextP;
+        while (endP != NULL) {
+            endpoint_t *nextP;
 
             nextP = endP->next;
             if (endP->cmdList == NULL
-            || endP->status == CMD_STATUS_FAIL)
-            {
+                    || endP->status == CMD_STATUS_FAIL) {
                 prv_endpoint_free(endP);
                 parentP->next = nextP;
-            }
-            else
-            {
+            } else {
                 parentP = endP;
             }
             endP = nextP;
@@ -204,246 +190,235 @@ static void prv_endpoint_clean(internal_data_t * dataP)
     }
 }
 
-static void prv_send_command(internal_data_t * dataP,
-                             endpoint_t * endP)
+static void prv_send_command(internal_data_t *dataP,
+                             endpoint_t *endP)
 {
     int res;
 
-    if (endP->cmdList == NULL) return;
-
-    switch (endP->cmdList->operation)
-    {
-    case BS_DELETE:
-        fprintf(stdout, "Sending DELETE ");
-        prv_print_uri(stdout, endP->cmdList->uri);
-        fprintf(stdout, " to \"%s\"", endP->name);
-        res = lwm2m_bootstrap_delete(dataP->lwm2mH, endP->handle, endP->cmdList->uri);
-        break;
-
-    case BS_WRITE_SECURITY:
-    {
-        lwm2m_uri_t uri;
-        bs_server_tlv_t * serverP;
-
-        serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
-        if (serverP == NULL
-         || serverP->securityData == NULL)
-        {
-            endP->status = CMD_STATUS_FAIL;
-            return;
-        }
-
-        uri.flag = LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID;
-        uri.objectId = LWM2M_SECURITY_OBJECT_ID;
-        uri.instanceId = endP->cmdList->serverId;
-
-        fprintf(stdout, "Sending WRITE ");
-        prv_print_uri(stdout, &uri);
-        fprintf(stdout, " to \"%s\"", endP->name);
-
-        res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
-    }
-        break;
-
-    case BS_WRITE_SERVER:
-    {
-        lwm2m_uri_t uri;
-        bs_server_tlv_t * serverP;
-
-        serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
-        if (serverP == NULL
-         || serverP->serverData == NULL)
-        {
-            endP->status = CMD_STATUS_FAIL;
-            return;
-        }
-
-        uri.flag = LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID;
-        uri.objectId = LWM2M_SERVER_OBJECT_ID;
-        uri.instanceId = endP->cmdList->serverId;
-
-        fprintf(stdout, "Sending WRITE ");
-        prv_print_uri(stdout, &uri);
-        fprintf(stdout, " to \"%s\"", endP->name);
-
-        res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
-    }
-        break;
-
-    case BS_FINISH:
-        fprintf(stdout, "Sending BOOTSTRAP FINISH ");
-        fprintf(stdout, " to \"%s\"", endP->name);
-
-        res = lwm2m_bootstrap_finish(dataP->lwm2mH, endP->handle);
-        break;
-
-    default:
+    if (endP->cmdList == NULL) {
         return;
     }
 
-    if (res == COAP_NO_ERROR)
-    {
+    switch (endP->cmdList->operation) {
+        case BS_DELETE:
+            fprintf(stdout, "Sending DELETE ");
+            prv_print_uri(stdout, endP->cmdList->uri);
+            fprintf(stdout, " to \"%s\"", endP->name);
+            res = lwm2m_bootstrap_delete(dataP->lwm2mH, endP->handle, endP->cmdList->uri);
+            break;
+
+        case BS_WRITE_SECURITY: {
+            lwm2m_uri_t uri;
+            bs_server_tlv_t *serverP;
+
+            serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
+            if (serverP == NULL
+                    || serverP->securityData == NULL) {
+                endP->status = CMD_STATUS_FAIL;
+                return;
+            }
+
+            uri.flag = LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID;
+            uri.objectId = LWM2M_SECURITY_OBJECT_ID;
+            uri.instanceId = endP->cmdList->serverId;
+
+            fprintf(stdout, "Sending WRITE ");
+            prv_print_uri(stdout, &uri);
+            fprintf(stdout, " to \"%s\"", endP->name);
+
+            res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
+        }
+        break;
+
+        case BS_WRITE_SERVER: {
+            lwm2m_uri_t uri;
+            bs_server_tlv_t *serverP;
+
+            serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
+            if (serverP == NULL
+                    || serverP->serverData == NULL) {
+                endP->status = CMD_STATUS_FAIL;
+                return;
+            }
+
+            uri.flag = LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID;
+            uri.objectId = LWM2M_SERVER_OBJECT_ID;
+            uri.instanceId = endP->cmdList->serverId;
+
+            fprintf(stdout, "Sending WRITE ");
+            prv_print_uri(stdout, &uri);
+            fprintf(stdout, " to \"%s\"", endP->name);
+
+            res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
+        }
+        break;
+
+        case BS_FINISH:
+            fprintf(stdout, "Sending BOOTSTRAP FINISH ");
+            fprintf(stdout, " to \"%s\"", endP->name);
+
+            res = lwm2m_bootstrap_finish(dataP->lwm2mH, endP->handle);
+            break;
+
+        default:
+            return;
+    }
+
+    if (res == COAP_NO_ERROR) {
         fprintf(stdout, " OK.\r\n");
 
         endP->status = CMD_STATUS_SENT;
-    }
-    else
-    {
+    } else {
         fprintf(stdout, " failed!\r\n");
 
         endP->status = CMD_STATUS_FAIL;
     }
 }
 
-static int prv_bootstrap_callback(void * sessionH,
+static int prv_bootstrap_callback(void *sessionH,
                                   uint8_t status,
-                                  lwm2m_uri_t * uriP,
-                                  char * name,
-                                  void * userData)
+                                  lwm2m_uri_t *uriP,
+                                  char *name,
+                                  void *userData)
 {
-    internal_data_t * dataP = (internal_data_t *)userData;
+    internal_data_t *dataP = (internal_data_t *)userData;
     uint8_t result;
-    endpoint_t * endP;
+    endpoint_t *endP;
 
-    switch (status)
-    {
-    case COAP_NO_ERROR:
-    {
-        bs_endpoint_info_t * endInfoP;
+    switch (status) {
+        case COAP_NO_ERROR: {
+            bs_endpoint_info_t *endInfoP;
 
-        // Display
-        fprintf(stdout, "\r\nBootstrap request from \"%s\"\r\n", name);
+            // Display
+            fprintf(stdout, "\r\nBootstrap request from \"%s\"\r\n", name);
 
-        // find Bootstrap Info for this endpoint
-        endInfoP = dataP->bsInfo->endpointList;
-        while (endInfoP != NULL
-            && endInfoP->name != NULL
-            && strcmp(name, endInfoP->name) != 0)
-        {
-            endInfoP = endInfoP->next;
-        }
-        if (endInfoP == NULL)
-        {
-            // find default Bootstrap Info
+            // find Bootstrap Info for this endpoint
             endInfoP = dataP->bsInfo->endpointList;
             while (endInfoP != NULL
-                && endInfoP->name != NULL)
-            {
+                    && endInfoP->name != NULL
+                    && strcmp(name, endInfoP->name) != 0) {
                 endInfoP = endInfoP->next;
             }
+            if (endInfoP == NULL) {
+                // find default Bootstrap Info
+                endInfoP = dataP->bsInfo->endpointList;
+                while (endInfoP != NULL
+                        && endInfoP->name != NULL) {
+                    endInfoP = endInfoP->next;
+                }
+            }
+            // Nothing found, discard the request
+            if (endInfoP == NULL) {
+                return COAP_IGNORE;
+            }
+
+            endP = prv_endpoint_new(dataP, sessionH);
+            if (endP == NULL) {
+                return COAP_500_INTERNAL_SERVER_ERROR;
+            }
+
+            endP->cmdList = endInfoP->commandList;
+            endP->handle = sessionH;
+            endP->name = strdup(name);
+            endP->status = CMD_STATUS_NEW;
+            endP->next = dataP->endpointList;
+            dataP->endpointList = endP;
+
+            return COAP_204_CHANGED;
         }
-        // Nothing found, discard the request
-        if (endInfoP == NULL)return COAP_IGNORE;
-
-        endP = prv_endpoint_new(dataP, sessionH);
-        if (endP == NULL) return COAP_500_INTERNAL_SERVER_ERROR;
-
-        endP->cmdList = endInfoP->commandList;
-        endP->handle = sessionH;
-        endP->name = strdup(name);
-        endP->status = CMD_STATUS_NEW;
-        endP->next = dataP->endpointList;
-        dataP->endpointList = endP;
-
-        return COAP_204_CHANGED;
-    }
-
-    default:
-        // Display
-        fprintf(stdout, "\r\n Received status ");
-        print_status(stdout, status);
-        fprintf(stdout, " for URI ");
-        prv_print_uri(stdout, uriP);
-
-        endP = prv_endpoint_find(dataP, sessionH);
-        if (endP == NULL)
-        {
-            fprintf(stdout, " from unknown endpoint.\r\n");
-            return COAP_NO_ERROR;
-        }
-        fprintf(stdout, " from endpoint %s.\r\n", endP->name);
-
-        // should not happen
-        if (endP->cmdList == NULL) return COAP_NO_ERROR;
-        if (endP->status != CMD_STATUS_SENT) return COAP_NO_ERROR;
-
-        switch (endP->cmdList->operation)
-        {
-        case BS_DELETE:
-            if (status == COAP_202_DELETED)
-            {
-                endP->status = CMD_STATUS_OK;
-            }
-            else
-            {
-                endP->status = CMD_STATUS_FAIL;
-            }
-            break;
-
-        case BS_WRITE_SECURITY:
-        case BS_WRITE_SERVER:
-            if (status == COAP_204_CHANGED)
-            {
-                endP->status = CMD_STATUS_OK;
-            }
-            else
-            {
-                endP->status = CMD_STATUS_FAIL;
-            }
-            break;
 
         default:
-            endP->status = CMD_STATUS_FAIL;
+            // Display
+            fprintf(stdout, "\r\n Received status ");
+            print_status(stdout, status);
+            fprintf(stdout, " for URI ");
+            prv_print_uri(stdout, uriP);
+
+            endP = prv_endpoint_find(dataP, sessionH);
+            if (endP == NULL) {
+                fprintf(stdout, " from unknown endpoint.\r\n");
+                return COAP_NO_ERROR;
+            }
+            fprintf(stdout, " from endpoint %s.\r\n", endP->name);
+
+            // should not happen
+            if (endP->cmdList == NULL) {
+                return COAP_NO_ERROR;
+            }
+            if (endP->status != CMD_STATUS_SENT) {
+                return COAP_NO_ERROR;
+            }
+
+            switch (endP->cmdList->operation) {
+                case BS_DELETE:
+                    if (status == COAP_202_DELETED) {
+                        endP->status = CMD_STATUS_OK;
+                    } else {
+                        endP->status = CMD_STATUS_FAIL;
+                    }
+                    break;
+
+                case BS_WRITE_SECURITY:
+                case BS_WRITE_SERVER:
+                    if (status == COAP_204_CHANGED) {
+                        endP->status = CMD_STATUS_OK;
+                    } else {
+                        endP->status = CMD_STATUS_FAIL;
+                    }
+                    break;
+
+                default:
+                    endP->status = CMD_STATUS_FAIL;
+                    break;
+            }
             break;
-        }
-        break;
     }
 
     return COAP_NO_ERROR;
 }
 
-static void prv_bootstrap_client(char * buffer,
-                                 void * user_data)
+static void prv_bootstrap_client(char *buffer,
+                                 void *user_data)
 {
-    internal_data_t * dataP = (internal_data_t *)user_data;
-    char * uri;
-    char * name;
-    char* end = NULL;
-    char * host;
-    char * port;
-    connection_t * newConnP = NULL;
+    internal_data_t *dataP = (internal_data_t *)user_data;
+    char *uri;
+    char *name;
+    char *end = NULL;
+    char *host;
+    char *port;
+    connection_t *newConnP = NULL;
 
     uri = buffer;
     end = get_end_of_arg(buffer);
-    if (end[0] != 0)
-    {
+    if (end[0] != 0) {
         *end = 0;
         buffer = end + 1;
         name = get_next_arg(buffer, &end);
     }
-    if (!check_end_of_args(end)) goto syntax_error;
+    if (!check_end_of_args(end)) {
+        goto syntax_error;
+    }
 
     // parse uri in the form "coaps://[host]:[port]"
-    if (0==strncmp(uri, "coaps://", strlen("coaps://"))) {
-        host = uri+strlen("coaps://");
-    }
-    else if (0==strncmp(uri, "coap://",  strlen("coap://"))) {
-        host = uri+strlen("coap://");
-    }
-    else {
+    if (0 == strncmp(uri, "coaps://", strlen("coaps://"))) {
+        host = uri + strlen("coaps://");
+    } else if (0 == strncmp(uri, "coap://",  strlen("coap://"))) {
+        host = uri + strlen("coap://");
+    } else {
         goto syntax_error;
     }
     port = strrchr(host, ':');
-    if (port == NULL) goto syntax_error;
+    if (port == NULL) {
+        goto syntax_error;
+    }
     // remove brackets
-    if (host[0] == '[')
-    {
+    if (host[0] == '[') {
         host++;
-        if (*(port - 1) == ']')
-        {
+        if (*(port - 1) == ']') {
             *(port - 1) = 0;
+        } else {
+            goto syntax_error;
         }
-        else goto syntax_error;
     }
     // split strings
     *port = 0;
@@ -458,12 +433,9 @@ static void prv_bootstrap_client(char * buffer,
     dataP->connList = newConnP;
 
     // simulate a client bootstrap request.
-    if (COAP_204_CHANGED == prv_bootstrap_callback(newConnP, COAP_NO_ERROR, NULL, name, user_data))
-    {
+    if (COAP_204_CHANGED == prv_bootstrap_callback(newConnP, COAP_NO_ERROR, NULL, name, user_data)) {
         fprintf(stdout, "OK");
-    }
-    else
-    {
+    } else {
         fprintf(stdout, "Error");
     }
     return;
@@ -478,17 +450,18 @@ int main(int argc, char *argv[])
     fd_set readfds;
     struct timeval tv;
     int result;
-    char * port = "5685";
+    char *port = "5685";
     internal_data_t data;
-    char * filename = "bootstrap_server.ini";
+    char *filename = "bootstrap_server.ini";
     int opt;
-    FILE * fd;
-    command_desc_t commands[] =
-    {
-        {"boot", "Bootstrap a client (Server Initiated).", " boot URI [NAME]\r\n"
-                                    "   URI: uri of the client to bootstrap\r\n"
-                                    "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
-                                    "Example: boot coap://[::1]:56830 testlwm2mclient", prv_bootstrap_client, &data},
+    FILE *fd;
+    command_desc_t commands[] = {
+        {
+            "boot", "Bootstrap a client (Server Initiated).", " boot URI [NAME]\r\n"
+            "   URI: uri of the client to bootstrap\r\n"
+            "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
+            "Example: boot coap://[::1]:56830 testlwm2mclient", prv_bootstrap_client, &data
+        },
         {"q", "Quit the server.", NULL, prv_quit, NULL},
 
         COMMAND_END_LIST
@@ -499,55 +472,48 @@ int main(int argc, char *argv[])
     data.addressFamily = AF_INET6;
 
     opt = 1;
-    while (opt < argc)
-    {
+    while (opt < argc) {
         if (argv[opt] == NULL
-         || argv[opt][0] != '-'
-         || argv[opt][2] != 0)
-        {
+                || argv[opt][0] != '-'
+                || argv[opt][2] != 0) {
             print_usage(filename, port);
             return 0;
         }
-        switch (argv[opt][1])
-        {
-        case 'f':
-            opt++;
-            if (opt >= argc)
-            {
+        switch (argv[opt][1]) {
+            case 'f':
+                opt++;
+                if (opt >= argc) {
+                    print_usage(filename, port);
+                    return 0;
+                }
+                filename = argv[opt];
+                break;
+            case 'l':
+                opt++;
+                if (opt >= argc) {
+                    print_usage(filename, port);
+                    return 0;
+                }
+                port = argv[opt];
+                break;
+            case '4':
+                data.addressFamily = AF_INET;
+                break;
+            default:
                 print_usage(filename, port);
                 return 0;
-            }
-            filename = argv[opt];
-            break;
-        case 'l':
-            opt++;
-            if (opt >= argc)
-            {
-                print_usage(filename, port);
-                return 0;
-            }
-            port = argv[opt];
-            break;
-        case '4':
-            data.addressFamily = AF_INET;
-            break;
-        default:
-            print_usage(filename, port);
-            return 0;
         }
         opt += 1;
     }
 
     data.sock = create_socket(port, data.addressFamily);
-    if (data.sock < 0)
-    {
+    if (data.sock < 0) {
         fprintf(stderr, "Error opening socket: %d\r\n", errno);
         return -1;
     }
 
     data.lwm2mH = lwm2m_init(NULL);
-    if (NULL == data.lwm2mH)
-    {
+    if (NULL == data.lwm2mH) {
         fprintf(stderr, "lwm2m_init() failed\r\n");
         return -1;
     }
@@ -555,16 +521,14 @@ int main(int argc, char *argv[])
     signal(SIGINT, handle_sigint);
 
     fd = fopen(filename, "r");
-    if (fd == NULL)
-    {
+    if (fd == NULL) {
         fprintf(stderr, "Opening file %s failed.\r\n", filename);
         return -1;
     }
 
     data.bsInfo = bs_get_info(fd);
     fclose(fd);
-    if (data.bsInfo == NULL)
-    {
+    if (data.bsInfo == NULL) {
         fprintf(stderr, "Reading Bootstrap Info from file %s failed.\r\n", filename);
         return -1;
     }
@@ -572,11 +536,11 @@ int main(int argc, char *argv[])
     lwm2m_set_bootstrap_callback(data.lwm2mH, prv_bootstrap_callback, (void *)&data);
 
     fprintf(stdout, "LWM2M Bootstrap Server now listening on port %s.\r\n\n", port);
-    fprintf(stdout, "> "); fflush(stdout);
+    fprintf(stdout, "> ");
+    fflush(stdout);
 
-    while (0 == g_quit)
-    {
-        endpoint_t * endP;
+    while (0 == g_quit) {
+        endpoint_t *endP;
 
         FD_ZERO(&readfds);
         FD_SET(data.sock, &readfds);
@@ -586,54 +550,42 @@ int main(int argc, char *argv[])
         tv.tv_usec = 0;
 
         result = lwm2m_step(data.lwm2mH, &(tv.tv_sec));
-        if (result != 0)
-        {
+        if (result != 0) {
             fprintf(stderr, "lwm2m_step() failed: 0x%X\r\n", result);
             return -1;
         }
 
         result = select(FD_SETSIZE, &readfds, 0, 0, &tv);
 
-        if ( result < 0 )
-        {
-            if (errno != EINTR)
-            {
-              fprintf(stderr, "Error in select(): %d\r\n", errno);
+        if (result < 0) {
+            if (errno != EINTR) {
+                fprintf(stderr, "Error in select(): %d\r\n", errno);
             }
-        }
-        else if (result >= 0)
-        {
+        } else if (result >= 0) {
             uint8_t buffer[MAX_PACKET_SIZE];
             int numBytes;
 
             // Packet received
-            if (FD_ISSET(data.sock, &readfds))
-            {
+            if (FD_ISSET(data.sock, &readfds)) {
                 struct sockaddr_storage addr;
                 socklen_t addrLen;
 
                 addrLen = sizeof(addr);
                 numBytes = recvfrom(data.sock, buffer, MAX_PACKET_SIZE, 0, (struct sockaddr *)&addr, &addrLen);
 
-                if (numBytes == -1)
-                {
+                if (numBytes == -1) {
                     fprintf(stderr, "Error in recvfrom(): %d\r\n", errno);
-                }
-                else
-                {
+                } else {
                     char s[INET6_ADDRSTRLEN];
                     in_port_t port;
-                    connection_t * connP;
+                    connection_t *connP;
 
-					s[0] = 0;
-                    if (AF_INET == addr.ss_family)
-                    {
+                    s[0] = 0;
+                    if (AF_INET == addr.ss_family) {
                         struct sockaddr_in *saddr = (struct sockaddr_in *)&addr;
                         inet_ntop(saddr->sin_family, &saddr->sin_addr, s, INET6_ADDRSTRLEN);
                         port = saddr->sin_port;
-                    }
-                    else if (AF_INET6 == addr.ss_family)
-                    {
+                    } else if (AF_INET6 == addr.ss_family) {
                         struct sockaddr_in6 *saddr = (struct sockaddr_in6 *)&addr;
                         inet_ntop(saddr->sin6_family, &saddr->sin6_addr, s, INET6_ADDRSTRLEN);
                         port = saddr->sin6_port;
@@ -644,37 +596,29 @@ int main(int argc, char *argv[])
                     output_buffer(stderr, buffer, numBytes, 0);
 
                     connP = connection_find(data.connList, &addr, addrLen);
-                    if (connP == NULL)
-                    {
+                    if (connP == NULL) {
                         connP = connection_new_incoming(data.connList, data.sock, (struct sockaddr *)&addr, addrLen);
-                        if (connP != NULL)
-                        {
+                        if (connP != NULL) {
                             data.connList = connP;
                         }
                     }
-                    if (connP != NULL)
-                    {
+                    if (connP != NULL) {
                         lwm2m_handle_packet(data.lwm2mH, buffer, numBytes, connP);
                     }
                 }
             }
             // command line input
-            else if (FD_ISSET(STDIN_FILENO, &readfds))
-            {
+            else if (FD_ISSET(STDIN_FILENO, &readfds)) {
                 numBytes = read(STDIN_FILENO, buffer, MAX_PACKET_SIZE - 1);
 
-                if (numBytes > 1)
-                {
+                if (numBytes > 1) {
                     buffer[numBytes] = 0;
-                    handle_command(commands, (char*)buffer);
+                    handle_command(commands, (char *)buffer);
                 }
-                if (g_quit == 0)
-                {
+                if (g_quit == 0) {
                     fprintf(stdout, "\r\n> ");
                     fflush(stdout);
-                }
-                else
-                {
+                } else {
                     fprintf(stdout, "\r\n");
                 }
             }
@@ -682,19 +626,17 @@ int main(int argc, char *argv[])
             prv_endpoint_clean(&data);
 
             endP = data.endpointList;
-            while (endP != NULL)
-            {
-                switch(endP->status)
-                {
-                case CMD_STATUS_OK:
-                    endP->cmdList = endP->cmdList->next;
-                    endP->status = CMD_STATUS_NEW;
+            while (endP != NULL) {
+                switch (endP->status) {
+                    case CMD_STATUS_OK:
+                        endP->cmdList = endP->cmdList->next;
+                        endP->status = CMD_STATUS_NEW;
                     // fall through
-                case CMD_STATUS_NEW:
-                    prv_send_command(&data, endP);
-                    break;
-                default:
-                    break;
+                    case CMD_STATUS_NEW:
+                        prv_send_command(&data, endP);
+                        break;
+                    default:
+                        break;
                 }
 
                 endP = endP->next;
@@ -704,9 +646,8 @@ int main(int argc, char *argv[])
 
     lwm2m_close(data.lwm2mH);
     bs_free_info(data.bsInfo);
-    while (data.endpointList != NULL)
-    {
-        endpoint_t * endP;
+    while (data.endpointList != NULL) {
+        endpoint_t *endP;
 
         endP = data.endpointList;
         data.endpointList = data.endpointList->next;

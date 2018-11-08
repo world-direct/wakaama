@@ -21,8 +21,9 @@
 #include "liblwm2m.h"
 
 
-static void handle_12345(lwm2m_block1_data_t ** blk1,
-                                  uint16_t mid) {
+static void handle_12345(lwm2m_block1_data_t **blk1,
+                         uint16_t mid)
+{
     uint8_t *buffer = "12345";
     size_t bsize;
     uint8_t *resultBuffer = NULL;
@@ -32,8 +33,9 @@ static void handle_12345(lwm2m_block1_data_t ** blk1,
     CU_ASSERT_PTR_NULL(resultBuffer);
 }
 
-static void handle_67(lwm2m_block1_data_t ** blk1,
-                                  uint16_t mid) {
+static void handle_67(lwm2m_block1_data_t **blk1,
+                      uint16_t mid)
+{
     uint8_t *buffer = "67";
     size_t bsize;
     uint8_t *resultBuffer = NULL;
@@ -48,7 +50,7 @@ static void handle_67(lwm2m_block1_data_t ** blk1,
 
 static void test_block1_nominal(void)
 {
-    lwm2m_block1_data_t * blk1 = NULL;
+    lwm2m_block1_data_t *blk1 = NULL;
 
     handle_12345(&blk1, 123);
     handle_67(&blk1, 346);
@@ -58,7 +60,7 @@ static void test_block1_nominal(void)
 
 static void test_block1_retransmit(void)
 {
-    lwm2m_block1_data_t * blk1 = NULL;
+    lwm2m_block1_data_t *blk1 = NULL;
 
     handle_12345(&blk1, 1);
     handle_12345(&blk1, 1);
@@ -70,12 +72,13 @@ static void test_block1_retransmit(void)
 }
 
 static struct TestTable table[] = {
-        { "test of test_block1_nominal()", test_block1_nominal },
-        { "test of test_block1_retransmit()", test_block1_retransmit },
-        { NULL, NULL },
+    { "test of test_block1_nominal()", test_block1_nominal },
+    { "test of test_block1_retransmit()", test_block1_retransmit },
+    { NULL, NULL },
 };
 
-CU_ErrorCode create_block1_suit() {
+CU_ErrorCode create_block1_suit()
+{
     CU_pSuite pSuite = NULL;
     pSuite = CU_add_suite("Suite_block1", NULL, NULL);
 

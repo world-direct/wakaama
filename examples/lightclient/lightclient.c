@@ -73,26 +73,25 @@
 #include <errno.h>
 #include <signal.h>
 
-extern lwm2m_object_t * get_object_device(void);
-extern void free_object_device(lwm2m_object_t * objectP);
-extern lwm2m_object_t * get_server_object(void);
-extern void free_server_object(lwm2m_object_t * object);
-extern lwm2m_object_t * get_security_object(void);
-extern void free_security_object(lwm2m_object_t * objectP);
-extern char * get_server_uri(lwm2m_object_t * objectP, uint16_t secObjInstID);
-extern lwm2m_object_t * get_test_object(void);
-extern void free_test_object(lwm2m_object_t * object);
+extern lwm2m_object_t *get_object_device(void);
+extern void free_object_device(lwm2m_object_t *objectP);
+extern lwm2m_object_t *get_server_object(void);
+extern void free_server_object(lwm2m_object_t *object);
+extern lwm2m_object_t *get_security_object(void);
+extern void free_security_object(lwm2m_object_t *objectP);
+extern char *get_server_uri(lwm2m_object_t *objectP, uint16_t secObjInstID);
+extern lwm2m_object_t *get_test_object(void);
+extern void free_test_object(lwm2m_object_t *object);
 
 #define MAX_PACKET_SIZE 1024
 
 int g_reboot = 0;
 static int g_quit = 0;
 
-typedef struct
-{
-    lwm2m_object_t * securityObjP;
+typedef struct {
+    lwm2m_object_t *securityObjP;
     int sock;
-    connection_t * connList;
+    connection_t *connList;
     int addressFamily;
 } client_data_t;
 
@@ -102,47 +101,45 @@ void handle_sigint(int signum)
     g_quit = 1;
 }
 
-void * lwm2m_connect_server(uint16_t secObjInstID,
-                            void * userData)
+void *lwm2m_connect_server(uint16_t secObjInstID,
+                           void *userData)
 {
-    client_data_t * dataP;
-    char * uri;
-    char * host;
-    char * port;
-    connection_t * newConnP = NULL;
+    client_data_t *dataP;
+    char *uri;
+    char *host;
+    char *port;
+    connection_t *newConnP = NULL;
 
     dataP = (client_data_t *)userData;
 
     uri = get_server_uri(dataP->securityObjP, secObjInstID);
 
-    if (uri == NULL) return NULL;
+    if (uri == NULL) {
+        return NULL;
+    }
 
     fprintf(stdout, "Connecting to %s\r\n", uri);
 
     // parse uri in the form "coaps://[host]:[port]"
-    if (0 == strncmp(uri, "coaps://", strlen("coaps://")))
-    {
-        host = uri+strlen("coaps://");
-    }
-    else if (0 == strncmp(uri, "coap://", strlen("coap://")))
-    {
-        host = uri+strlen("coap://");
-    }
-    else
-    {
+    if (0 == strncmp(uri, "coaps://", strlen("coaps://"))) {
+        host = uri + strlen("coaps://");
+    } else if (0 == strncmp(uri, "coap://", strlen("coap://"))) {
+        host = uri + strlen("coap://");
+    } else {
         goto exit;
     }
     port = strrchr(host, ':');
-    if (port == NULL) goto exit;
+    if (port == NULL) {
+        goto exit;
+    }
     // remove brackets
-    if (host[0] == '[')
-    {
+    if (host[0] == '[') {
         host++;
-        if (*(port - 1) == ']')
-        {
+        if (*(port - 1) == ']') {
             *(port - 1) = 0;
+        } else {
+            goto exit;
         }
-        else goto exit;
     }
     // split strings
     *port = 0;
@@ -151,8 +148,7 @@ void * lwm2m_connect_server(uint16_t secObjInstID,
     newConnP = connection_create(dataP->connList, dataP->sock, host, port, dataP->addressFamily);
     if (newConnP == NULL) {
         fprintf(stderr, "Connection creation failed.\r\n");
-    }
-    else {
+    } else {
         dataP->connList = newConnP;
     }
 
@@ -161,31 +157,26 @@ exit:
     return (void *)newConnP;
 }
 
-void lwm2m_close_connection(void * sessionH,
-                            void * userData)
+void lwm2m_close_connection(void *sessionH,
+                            void *userData)
 {
-    client_data_t * app_data;
-    connection_t * targetP;
+    client_data_t *app_data;
+    connection_t *targetP;
 
     app_data = (client_data_t *)userData;
     targetP = (connection_t *)sessionH;
 
-    if (targetP == app_data->connList)
-    {
+    if (targetP == app_data->connList) {
         app_data->connList = targetP->next;
         lwm2m_free(targetP);
-    }
-    else
-    {
-        connection_t * parentP;
+    } else {
+        connection_t *parentP;
 
         parentP = app_data->connList;
-        while (parentP != NULL && parentP->next != targetP)
-        {
+        while (parentP != NULL && parentP->next != targetP) {
             parentP = parentP->next;
         }
-        if (parentP != NULL)
-        {
+        if (parentP != NULL) {
             parentP->next = targetP->next;
             lwm2m_free(targetP);
         }
@@ -203,114 +194,103 @@ void print_usage(void)
     fprintf(stdout, "\r\n");
 }
 
-void print_state(lwm2m_context_t * lwm2mH)
+void print_state(lwm2m_context_t *lwm2mH)
 {
-    lwm2m_server_t * targetP;
+    lwm2m_server_t *targetP;
 
     fprintf(stderr, "State: ");
-    switch(lwm2mH->state)
-    {
-    case STATE_INITIAL:
-        fprintf(stderr, "STATE_INITIAL");
-        break;
-    case STATE_BOOTSTRAP_REQUIRED:
-        fprintf(stderr, "STATE_BOOTSTRAP_REQUIRED");
-        break;
-    case STATE_BOOTSTRAPPING:
-        fprintf(stderr, "STATE_BOOTSTRAPPING");
-        break;
-    case STATE_REGISTER_REQUIRED:
-        fprintf(stderr, "STATE_REGISTER_REQUIRED");
-        break;
-    case STATE_REGISTERING:
-        fprintf(stderr, "STATE_REGISTERING");
-        break;
-    case STATE_READY:
-        fprintf(stderr, "STATE_READY");
-        break;
-    default:
-        fprintf(stderr, "Unknown !");
-        break;
+    switch (lwm2mH->state) {
+        case STATE_INITIAL:
+            fprintf(stderr, "STATE_INITIAL");
+            break;
+        case STATE_BOOTSTRAP_REQUIRED:
+            fprintf(stderr, "STATE_BOOTSTRAP_REQUIRED");
+            break;
+        case STATE_BOOTSTRAPPING:
+            fprintf(stderr, "STATE_BOOTSTRAPPING");
+            break;
+        case STATE_REGISTER_REQUIRED:
+            fprintf(stderr, "STATE_REGISTER_REQUIRED");
+            break;
+        case STATE_REGISTERING:
+            fprintf(stderr, "STATE_REGISTERING");
+            break;
+        case STATE_READY:
+            fprintf(stderr, "STATE_READY");
+            break;
+        default:
+            fprintf(stderr, "Unknown !");
+            break;
     }
     fprintf(stderr, "\r\n");
 
     targetP = lwm2mH->bootstrapServerList;
 
-    if (lwm2mH->bootstrapServerList == NULL)
-    {
+    if (lwm2mH->bootstrapServerList == NULL) {
         fprintf(stderr, "No Bootstrap Server.\r\n");
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "Bootstrap Servers:\r\n");
-        for (targetP = lwm2mH->bootstrapServerList ; targetP != NULL ; targetP = targetP->next)
-        {
+        for (targetP = lwm2mH->bootstrapServerList ; targetP != NULL ; targetP = targetP->next) {
             fprintf(stderr, " - Security Object ID %d", targetP->secObjInstID);
             fprintf(stderr, "\tHold Off Time: %lu s", (unsigned long)targetP->lifetime);
             fprintf(stderr, "\tstatus: ");
-            switch(targetP->status)
-            {
-            case STATE_DEREGISTERED:
-                fprintf(stderr, "DEREGISTERED\r\n");
-                break;
-            case STATE_BS_HOLD_OFF:
-                fprintf(stderr, "CLIENT HOLD OFF\r\n");
-                break;
-            case STATE_BS_INITIATED:
-                fprintf(stderr, "BOOTSTRAP INITIATED\r\n");
-                break;
-            case STATE_BS_PENDING:
-                fprintf(stderr, "BOOTSTRAP PENDING\r\n");
-                break;
-            case STATE_BS_FINISHED:
-                fprintf(stderr, "BOOTSTRAP FINISHED\r\n");
-                break;
-            case STATE_BS_FAILED:
-                fprintf(stderr, "BOOTSTRAP FAILED\r\n");
-                break;
-            default:
-                fprintf(stderr, "INVALID (%d)\r\n", (int)targetP->status);
+            switch (targetP->status) {
+                case STATE_DEREGISTERED:
+                    fprintf(stderr, "DEREGISTERED\r\n");
+                    break;
+                case STATE_BS_HOLD_OFF:
+                    fprintf(stderr, "CLIENT HOLD OFF\r\n");
+                    break;
+                case STATE_BS_INITIATED:
+                    fprintf(stderr, "BOOTSTRAP INITIATED\r\n");
+                    break;
+                case STATE_BS_PENDING:
+                    fprintf(stderr, "BOOTSTRAP PENDING\r\n");
+                    break;
+                case STATE_BS_FINISHED:
+                    fprintf(stderr, "BOOTSTRAP FINISHED\r\n");
+                    break;
+                case STATE_BS_FAILED:
+                    fprintf(stderr, "BOOTSTRAP FAILED\r\n");
+                    break;
+                default:
+                    fprintf(stderr, "INVALID (%d)\r\n", (int)targetP->status);
             }
             fprintf(stderr, "\r\n");
         }
     }
 
-    if (lwm2mH->serverList == NULL)
-    {
+    if (lwm2mH->serverList == NULL) {
         fprintf(stderr, "No LWM2M Server.\r\n");
-    }
-    else
-    {
+    } else {
         fprintf(stderr, "LWM2M Servers:\r\n");
-        for (targetP = lwm2mH->serverList ; targetP != NULL ; targetP = targetP->next)
-        {
+        for (targetP = lwm2mH->serverList ; targetP != NULL ; targetP = targetP->next) {
             fprintf(stderr, " - Server ID %d", targetP->shortID);
             fprintf(stderr, "\tstatus: ");
-            switch(targetP->status)
-            {
-            case STATE_DEREGISTERED:
-                fprintf(stderr, "DEREGISTERED\r\n");
-                break;
-            case STATE_REG_PENDING:
-                fprintf(stderr, "REGISTRATION PENDING\r\n");
-                break;
-            case STATE_REGISTERED:
-                fprintf(stderr, "REGISTERED\tlocation: \"%s\"\tLifetime: %lus\r\n", targetP->location, (unsigned long)targetP->lifetime);
-                break;
-            case STATE_REG_UPDATE_PENDING:
-                fprintf(stderr, "REGISTRATION UPDATE PENDING\r\n");
-                break;
-            case STATE_REG_UPDATE_NEEDED:
-                fprintf(stderr, "REGISTRATION UPDATE REQUIRED\r\n");
-                break;
-            case STATE_DEREG_PENDING:
-                fprintf(stderr, "DEREGISTRATION PENDING\r\n");
-                break;
-            case STATE_REG_FAILED:
-                fprintf(stderr, "REGISTRATION FAILED\r\n");
-                break;
-            default:
-                fprintf(stderr, "INVALID (%d)\r\n", (int)targetP->status);
+            switch (targetP->status) {
+                case STATE_DEREGISTERED:
+                    fprintf(stderr, "DEREGISTERED\r\n");
+                    break;
+                case STATE_REG_PENDING:
+                    fprintf(stderr, "REGISTRATION PENDING\r\n");
+                    break;
+                case STATE_REGISTERED:
+                    fprintf(stderr, "REGISTERED\tlocation: \"%s\"\tLifetime: %lus\r\n", targetP->location, (unsigned long)targetP->lifetime);
+                    break;
+                case STATE_REG_UPDATE_PENDING:
+                    fprintf(stderr, "REGISTRATION UPDATE PENDING\r\n");
+                    break;
+                case STATE_REG_UPDATE_NEEDED:
+                    fprintf(stderr, "REGISTRATION UPDATE REQUIRED\r\n");
+                    break;
+                case STATE_DEREG_PENDING:
+                    fprintf(stderr, "DEREGISTRATION PENDING\r\n");
+                    break;
+                case STATE_REG_FAILED:
+                    fprintf(stderr, "REGISTRATION FAILED\r\n");
+                    break;
+                default:
+                    fprintf(stderr, "INVALID (%d)\r\n", (int)targetP->status);
             }
             fprintf(stderr, "\r\n");
         }
@@ -322,11 +302,11 @@ void print_state(lwm2m_context_t * lwm2mH)
 int main(int argc, char *argv[])
 {
     client_data_t data;
-    lwm2m_context_t * lwm2mH = NULL;
-    lwm2m_object_t * objArray[OBJ_COUNT];
+    lwm2m_context_t *lwm2mH = NULL;
+    lwm2m_object_t *objArray[OBJ_COUNT];
 
-    const char * localPort = "56830";
-    char * name = "testlwm2mclient";
+    const char *localPort = "56830";
+    char *name = "testlwm2mclient";
 
     int result;
     int opt;
@@ -336,41 +316,36 @@ int main(int argc, char *argv[])
     data.addressFamily = AF_INET6;
 
     opt = 1;
-    while (opt < argc)
-    {
+    while (opt < argc) {
         if (argv[opt] == NULL
-            || argv[opt][0] != '-'
-            || argv[opt][2] != 0)
-        {
+                || argv[opt][0] != '-'
+                || argv[opt][2] != 0) {
             print_usage();
             return 0;
         }
-        switch (argv[opt][1])
-        {
-        case 'n':
-            opt++;
-            if (opt >= argc)
-            {
+        switch (argv[opt][1]) {
+            case 'n':
+                opt++;
+                if (opt >= argc) {
+                    print_usage();
+                    return 0;
+                }
+                name = argv[opt];
+                break;
+            case 'l':
+                opt++;
+                if (opt >= argc) {
+                    print_usage();
+                    return 0;
+                }
+                localPort = argv[opt];
+                break;
+            case '4':
+                data.addressFamily = AF_INET;
+                break;
+            default:
                 print_usage();
                 return 0;
-            }
-            name = argv[opt];
-            break;
-        case 'l':
-            opt++;
-            if (opt >= argc)
-            {
-                print_usage();
-                return 0;
-            }
-            localPort = argv[opt];
-            break;
-        case '4':
-            data.addressFamily = AF_INET;
-            break;
-        default:
-            print_usage();
-            return 0;
         }
         opt += 1;
     }
@@ -380,8 +355,7 @@ int main(int argc, char *argv[])
      */
     fprintf(stderr, "Trying to bind LWM2M Client to port %s\r\n", localPort);
     data.sock = create_socket(localPort, data.addressFamily);
-    if (data.sock < 0)
-    {
+    if (data.sock < 0) {
         fprintf(stderr, "Failed to open socket: %d %s\r\n", errno, strerror(errno));
         return -1;
     }
@@ -391,30 +365,26 @@ int main(int argc, char *argv[])
      * Those functions are located in their respective object file.
      */
     objArray[0] = get_security_object();
-    if (NULL == objArray[0])
-    {
+    if (NULL == objArray[0]) {
         fprintf(stderr, "Failed to create security object\r\n");
         return -1;
     }
     data.securityObjP = objArray[0];
 
     objArray[1] = get_server_object();
-    if (NULL == objArray[1])
-    {
+    if (NULL == objArray[1]) {
         fprintf(stderr, "Failed to create server object\r\n");
         return -1;
     }
 
     objArray[2] = get_object_device();
-    if (NULL == objArray[2])
-    {
+    if (NULL == objArray[2]) {
         fprintf(stderr, "Failed to create Device object\r\n");
         return -1;
     }
 
     objArray[3] = get_test_object();
-    if (NULL == objArray[3])
-    {
+    if (NULL == objArray[3]) {
         fprintf(stderr, "Failed to create Test object\r\n");
         return -1;
     }
@@ -424,8 +394,7 @@ int main(int argc, char *argv[])
      * charge of communication
      */
     lwm2mH = lwm2m_init(&data);
-    if (NULL == lwm2mH)
-    {
+    if (NULL == lwm2mH) {
         fprintf(stderr, "lwm2m_init() failed\r\n");
         return -1;
     }
@@ -435,8 +404,7 @@ int main(int argc, char *argv[])
      * the number of objects we will be passing through and the objects array
      */
     result = lwm2m_configure(lwm2mH, name, NULL, NULL, OBJ_COUNT, objArray);
-    if (result != 0)
-    {
+    if (result != 0) {
         fprintf(stderr, "lwm2m_configure() failed: 0x%X\r\n", result);
         return -1;
     }
@@ -451,8 +419,7 @@ int main(int argc, char *argv[])
     /*
      * We now enter in a while loop that will handle the communications from the server
      */
-    while (0 == g_quit)
-    {
+    while (0 == g_quit) {
         struct timeval tv;
         fd_set readfds;
 
@@ -471,8 +438,7 @@ int main(int argc, char *argv[])
          *    (eg. retransmission) and the time before the next operation
          */
         result = lwm2m_step(lwm2mH, &(tv.tv_sec));
-        if (result != 0)
-        {
+        if (result != 0) {
             fprintf(stderr, "lwm2m_step() failed: 0x%X\r\n", result);
             return -1;
         }
@@ -483,23 +449,18 @@ int main(int argc, char *argv[])
          */
         result = select(FD_SETSIZE, &readfds, NULL, NULL, &tv);
 
-        if (result < 0)
-        {
-            if (errno != EINTR)
-            {
-              fprintf(stderr, "Error in select(): %d %s\r\n", errno, strerror(errno));
+        if (result < 0) {
+            if (errno != EINTR) {
+                fprintf(stderr, "Error in select(): %d %s\r\n", errno, strerror(errno));
             }
-        }
-        else if (result > 0)
-        {
+        } else if (result > 0) {
             uint8_t buffer[MAX_PACKET_SIZE];
             int numBytes;
 
             /*
              * If an event happens on the socket
              */
-            if (FD_ISSET(data.sock, &readfds))
-            {
+            if (FD_ISSET(data.sock, &readfds)) {
                 struct sockaddr_storage addr;
                 socklen_t addrLen;
 
@@ -510,24 +471,18 @@ int main(int argc, char *argv[])
                  */
                 numBytes = recvfrom(data.sock, buffer, MAX_PACKET_SIZE, 0, (struct sockaddr *)&addr, &addrLen);
 
-                if (0 > numBytes)
-                {
+                if (0 > numBytes) {
                     fprintf(stderr, "Error in recvfrom(): %d %s\r\n", errno, strerror(errno));
-                }
-                else if (0 < numBytes)
-                {
-                    connection_t * connP;
+                } else if (0 < numBytes) {
+                    connection_t *connP;
 
                     connP = connection_find(data.connList, &addr, addrLen);
-                    if (connP != NULL)
-                    {
+                    if (connP != NULL) {
                         /*
                          * Let liblwm2m respond to the query depending on the context
                          */
                         lwm2m_handle_packet(lwm2mH, buffer, numBytes, connP);
-                    }
-                    else
-                    {
+                    } else {
                         /*
                          * This packet comes from an unknown peer
                          */
