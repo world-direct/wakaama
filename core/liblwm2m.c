@@ -138,7 +138,7 @@ static void prv_deleteObservedList(lwm2m_context_t *contextP)
         targetP = contextP->observedList;
         contextP->observedList = contextP->observedList->next;
 
-        for (watcherP = targetP->watcherList ; watcherP != NULL ; watcherP = watcherP->next) {
+        for (watcherP = targetP->watcherList; watcherP != NULL; watcherP = watcherP->next) {
             if (watcherP->parameters != NULL) {
                 lwm2m_free(watcherP->parameters);
             }
@@ -241,7 +241,11 @@ int lwm2m_configure(lwm2m_context_t *contextP,
     int i;
     uint8_t found;
 
-    LOG_ARG("endpointName: \"%s\", msisdn: \"%s\", altPath: \"%s\", numObject: %d", endpointName, msisdn, altPath, numObject);
+    LOG_ARG("endpointName: \"%s\", msisdn: \"%s\", altPath: \"%s\", numObject: %d",
+            endpointName,
+            msisdn,
+            altPath,
+            numObject);
     // This API can be called only once for now
     if (contextP->endpointName != NULL || contextP->objectList != NULL) {
         return COAP_400_BAD_REQUEST;
@@ -255,7 +259,7 @@ int lwm2m_configure(lwm2m_context_t *contextP,
     }
     // Check that mandatory objects are present
     found = 0;
-    for (i = 0 ; i < numObject ; i++) {
+    for (i = 0; i < numObject; i++) {
         if (objectList[i]->objID == LWM2M_SECURITY_OBJECT_ID) {
             found |= 0x01;
         }
@@ -304,8 +308,7 @@ int lwm2m_configure(lwm2m_context_t *contextP,
     return COAP_NO_ERROR;
 }
 
-int lwm2m_add_object(lwm2m_context_t *contextP,
-                     lwm2m_object_t *objectP)
+int lwm2m_add_object(lwm2m_context_t *contextP, lwm2m_object_t *objectP)
 {
     lwm2m_object_t *targetP;
 
@@ -325,8 +328,7 @@ int lwm2m_add_object(lwm2m_context_t *contextP,
     return COAP_NO_ERROR;
 }
 
-int lwm2m_remove_object(lwm2m_context_t *contextP,
-                        uint16_t id)
+int lwm2m_remove_object(lwm2m_context_t *contextP, uint16_t id)
 {
     lwm2m_object_t *targetP;
 
@@ -347,8 +349,7 @@ int lwm2m_remove_object(lwm2m_context_t *contextP,
 #endif
 
 
-int lwm2m_step(lwm2m_context_t *contextP,
-               time_t *timeoutP)
+int lwm2m_step(lwm2m_context_t *contextP, time_t *timeoutP)
 {
     time_t tv_sec;
     int result;
@@ -361,7 +362,7 @@ int lwm2m_step(lwm2m_context_t *contextP,
 
 #ifdef LWM2M_CLIENT_MODE
     LOG_ARG("State: %s", STR_STATE(contextP->state));
-    // state can also be modified in bootstrap_handleCommand().
+// state can also be modified in bootstrap_handleCommand().
 
 next_step:
     switch (contextP->state) {
@@ -373,7 +374,7 @@ next_step:
                 contextP->state = STATE_REGISTER_REQUIRED;
             } else {
                 // Bootstrapping
-                //contextP->state = STATE_BOOTSTRAP_REQUIRED;
+                // contextP->state = STATE_BOOTSTRAP_REQUIRED;
                 contextP->state = STATE_REGISTER_REQUIRED;
             }
             goto next_step;
@@ -435,8 +436,7 @@ next_step:
                     // keep on waiting
                     break;
             }
-        }
-        break;
+        } break;
 
         case STATE_READY:
             if (registration_getStatus(contextP) == STATE_REG_FAILED) {

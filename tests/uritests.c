@@ -15,23 +15,23 @@
  *
  *******************************************************************************/
 
-#include "tests.h"
 #include "CUnit/Basic.h"
 #include "internals.h"
 #include "memtest.h"
+#include "tests.h"
 
 
 static void test_uri_decode(void)
 {
     lwm2m_uri_t *uri;
-    multi_option_t extraID = { .next = NULL, .is_static = 1, .len = 3, .data = (uint8_t *) "555" };
-    multi_option_t rID = { .next = NULL, .is_static = 1, .len = 1, .data = (uint8_t *) "0" };
-    multi_option_t iID = { .next = &rID, .is_static = 1, .len = 2, .data = (uint8_t *) "11" };
-    multi_option_t oID = { .next = &iID, .is_static = 1, .len = 4, .data = (uint8_t *) "9050" };
-    multi_option_t location = { .next = NULL, .is_static = 1, .len = 4, .data = (uint8_t *) "5a3f" };
-    multi_option_t locationDecimal = { .next = NULL, .is_static = 1, .len = 4, .data = (uint8_t *) "5312" };
-    multi_option_t reg = { .next = NULL, .is_static = 1, .len = 2, .data = (uint8_t *) "rd" };
-    multi_option_t boot = { .next = NULL, .is_static = 1, .len = 2, .data = (uint8_t *) "bs" };
+    multi_option_t extraID = {.next = NULL, .is_static = 1, .len = 3, .data = (uint8_t *)"555"};
+    multi_option_t rID = {.next = NULL, .is_static = 1, .len = 1, .data = (uint8_t *)"0"};
+    multi_option_t iID = {.next = &rID, .is_static = 1, .len = 2, .data = (uint8_t *)"11"};
+    multi_option_t oID = {.next = &iID, .is_static = 1, .len = 4, .data = (uint8_t *)"9050"};
+    multi_option_t location = {.next = NULL, .is_static = 1, .len = 4, .data = (uint8_t *)"5a3f"};
+    multi_option_t locationDecimal = {.next = NULL, .is_static = 1, .len = 4, .data = (uint8_t *)"5312"};
+    multi_option_t reg = {.next = NULL, .is_static = 1, .len = 2, .data = (uint8_t *)"rd"};
+    multi_option_t boot = {.next = NULL, .is_static = 1, .len = 2, .data = (uint8_t *)"bs"};
 
     MEMORY_TRACE_BEFORE;
 
@@ -71,7 +71,9 @@ static void test_uri_decode(void)
     /* "/9050/11/0" */
     uri = uri_decode(NULL, &oID);
     CU_ASSERT_PTR_NOT_NULL_FATAL(uri);
-    CU_ASSERT_EQUAL(uri->flag, LWM2M_URI_FLAG_DM | LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID | LWM2M_URI_FLAG_RESOURCE_ID);
+    CU_ASSERT_EQUAL(uri->flag,
+                    LWM2M_URI_FLAG_DM | LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID |
+                        LWM2M_URI_FLAG_RESOURCE_ID);
     CU_ASSERT_EQUAL(uri->objectId, 9050);
     CU_ASSERT_EQUAL(uri->instanceId, 11);
     CU_ASSERT_EQUAL(uri->resourceId, 0);
@@ -145,9 +147,7 @@ static void test_string_to_uri(void)
 }
 
 static struct TestTable table[] = {
-    { "test of uri_decode()", test_uri_decode },
-    { "test of lwm2m_stringToUri()", test_string_to_uri },
-    { NULL, NULL },
+    {"test of uri_decode()", test_uri_decode}, {"test of lwm2m_stringToUri()", test_string_to_uri}, {NULL, NULL},
 };
 
 CU_ErrorCode create_uri_suit()
@@ -161,4 +161,3 @@ CU_ErrorCode create_uri_suit()
 
     return add_tests(pSuite, table);
 }
-

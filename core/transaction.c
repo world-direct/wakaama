@@ -111,11 +111,11 @@ Contains code snippets which are:
  * Modulo mask (+1 and +0.5 for rounding) for a random number to get the tick number for the random
  * retransmission time between COAP_RESPONSE_TIMEOUT and COAP_RESPONSE_TIMEOUT*COAP_RESPONSE_RANDOM_FACTOR.
  */
-#define COAP_RESPONSE_TIMEOUT_TICKS         (CLOCK_SECOND * COAP_RESPONSE_TIMEOUT)
-#define COAP_RESPONSE_TIMEOUT_BACKOFF_MASK  ((CLOCK_SECOND * COAP_RESPONSE_TIMEOUT * (COAP_RESPONSE_RANDOM_FACTOR - 1)) + 1.5)
+#define COAP_RESPONSE_TIMEOUT_TICKS (CLOCK_SECOND * COAP_RESPONSE_TIMEOUT)
+#define COAP_RESPONSE_TIMEOUT_BACKOFF_MASK \
+    ((CLOCK_SECOND * COAP_RESPONSE_TIMEOUT * (COAP_RESPONSE_RANDOM_FACTOR - 1)) + 1.5)
 
-static int prv_checkFinished(lwm2m_transaction_t *transacP,
-                             coap_packet_t *receivedMessage)
+static int prv_checkFinished(lwm2m_transaction_t *transacP, coap_packet_t *receivedMessage)
 {
     int len;
     const uint8_t *token;
@@ -151,8 +151,7 @@ lwm2m_transaction_t *transaction_new(void *sessionH,
     lwm2m_transaction_t *transacP;
     int result;
 
-    LOG_ARG("method: %d, altPath: \"%s\", mID: %d, token_len: %d",
-            method, altPath, mID, token_len);
+    LOG_ARG("method: %d, altPath: \"%s\", mID: %d, token_len: %d", method, altPath, mID, token_len);
     LOG_URI(uriP);
 
     // no transactions without peer
@@ -256,11 +255,10 @@ void transaction_free(lwm2m_transaction_t *transacP)
     lwm2m_free(transacP);
 }
 
-void transaction_remove(lwm2m_context_t *contextP,
-                        lwm2m_transaction_t *transacP)
+void transaction_remove(lwm2m_context_t *contextP, lwm2m_transaction_t *transacP)
 {
     LOG("Entering");
-    contextP->transactionList = (lwm2m_transaction_t *) LWM2M_LIST_RM(contextP->transactionList, transacP->mID, NULL);
+    contextP->transactionList = (lwm2m_transaction_t *)LWM2M_LIST_RM(contextP->transactionList, transacP->mID, NULL);
     transaction_free(transacP);
 }
 
@@ -330,8 +328,7 @@ bool transaction_handleResponse(lwm2m_context_t *contextP,
     return false;
 }
 
-int transaction_send(lwm2m_context_t *contextP,
-                     lwm2m_transaction_t *transacP)
+int transaction_send(lwm2m_context_t *contextP, lwm2m_transaction_t *transacP)
 {
     bool maxRetriesReached = false;
 
@@ -395,9 +392,7 @@ int transaction_send(lwm2m_context_t *contextP,
     return 0;
 }
 
-void transaction_step(lwm2m_context_t *contextP,
-                      time_t currentTime,
-                      time_t *timeoutP)
+void transaction_step(lwm2m_context_t *contextP, time_t currentTime, time_t *timeoutP)
 {
     lwm2m_transaction_t *transacP;
 

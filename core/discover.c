@@ -18,22 +18,21 @@
 
 #include "internals.h"
 
-#define PRV_LINK_BUFFER_SIZE  1024
+#define PRV_LINK_BUFFER_SIZE 1024
 
 
-#define PRV_CONCAT_STR(buf, len, index, str, str_len)    \
-    {                                                    \
-        if ((len)-(index) < (str_len)) return -1;        \
-        memcpy((buf)+(index), (str), (str_len));         \
-        (index) += (str_len);                            \
+#define PRV_CONCAT_STR(buf, len, index, str, str_len) \
+    {                                                 \
+        if ((len) - (index) < (str_len))              \
+            return -1;                                \
+        memcpy((buf) + (index), (str), (str_len));    \
+        (index) += (str_len);                         \
     }
 
 
 #ifdef LWM2M_CLIENT_MODE
 
-static lwm2m_attributes_t *prv_findAttributes(lwm2m_context_t *contextP,
-                                              lwm2m_uri_t *uriP,
-                                              lwm2m_server_t *serverP)
+static lwm2m_attributes_t *prv_findAttributes(lwm2m_context_t *contextP, lwm2m_uri_t *uriP, lwm2m_server_t *serverP)
 {
     lwm2m_observed_t *observedP;
     lwm2m_watcher_t *watcherP;
@@ -247,7 +246,7 @@ static int prv_serializeLinkData(lwm2m_context_t *contextP,
                 uri.flag |= LWM2M_URI_FLAG_RESOURCE_ID;
                 res = prv_serializeAttributes(contextP, &uri, serverP, objectParamP, buffer, head - 1, bufferLen);
                 if (res < 0) {
-                    return -1;    // careful, 0 is valid
+                    return -1; // careful, 0 is valid
                 }
                 if (res > 0) {
                     head += res;
@@ -293,23 +292,30 @@ static int prv_serializeLinkData(lwm2m_context_t *contextP,
             if (serverP != NULL) {
                 res = prv_serializeAttributes(contextP, &uri, serverP, NULL, buffer, head - 1, bufferLen);
                 if (res < 0) {
-                    return -1;    // careful, 0 is valid
+                    return -1; // careful, 0 is valid
                 }
                 if (res == 0) {
-                    head = 0;    // rewind
+                    head = 0; // rewind
                 } else {
                     head += res;
                 }
             }
             for (index = 0; index < tlvP->value.asChildren.count; index++) {
-                res = prv_serializeLinkData(contextP, tlvP->value.asChildren.array + index, serverP, objectParamP, &uri, uriStr, uriLen, buffer + head, bufferLen - head);
+                res = prv_serializeLinkData(contextP,
+                                            tlvP->value.asChildren.array + index,
+                                            serverP,
+                                            objectParamP,
+                                            &uri,
+                                            uriStr,
+                                            uriLen,
+                                            buffer + head,
+                                            bufferLen - head);
                 if (res < 0) {
                     return -1;
                 }
                 head += res;
             }
-        }
-        break;
+        } break;
 
         case LWM2M_TYPE_OBJECT:
         default:
@@ -408,9 +414,10 @@ int discover_serialize(lwm2m_context_t *contextP,
             parentUri.instanceId = uriP->instanceId;
             parentUri.flag = LWM2M_URI_FLAG_INSTANCE_ID;
             if (serverP != NULL) {
-                res = prv_serializeAttributes(contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
+                res = prv_serializeAttributes(
+                    contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
                 if (res < 0) {
-                    return -1;    // careful, 0 is valid
+                    return -1; // careful, 0 is valid
                 }
             } else {
                 res = 0;
@@ -427,9 +434,10 @@ int discover_serialize(lwm2m_context_t *contextP,
             PRV_CONCAT_STR(bufferLink, PRV_LINK_BUFFER_SIZE, head, LINK_ITEM_END, LINK_ITEM_END_SIZE);
 
             if (serverP != NULL) {
-                res = prv_serializeAttributes(contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
+                res = prv_serializeAttributes(
+                    contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
                 if (res < 0) {
-                    return -1;    // careful, 0 is valid
+                    return -1; // careful, 0 is valid
                 }
                 head += res;
             }
@@ -443,7 +451,15 @@ int discover_serialize(lwm2m_context_t *contextP,
     baseUriLen -= 1;
 
     for (index = 0; index < size && head < PRV_LINK_BUFFER_SIZE; index++) {
-        res = prv_serializeLinkData(contextP, dataP + index, serverP, paramP, uriP, baseUriStr, baseUriLen, bufferLink + head, PRV_LINK_BUFFER_SIZE - head);
+        res = prv_serializeLinkData(contextP,
+                                    dataP + index,
+                                    serverP,
+                                    paramP,
+                                    uriP,
+                                    baseUriStr,
+                                    baseUriLen,
+                                    bufferLink + head,
+                                    PRV_LINK_BUFFER_SIZE - head);
         if (res < 0) {
             return -1;
         }

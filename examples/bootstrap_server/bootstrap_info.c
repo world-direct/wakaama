@@ -15,28 +15,27 @@
  *
  *******************************************************************************/
 
+#include <ctype.h> // isspace
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h> // isspace
 
 #include "bootstrap_info.h"
 
 typedef struct {
-    uint16_t    id;
-    char       *uri;
-    bool        isBootstrap;
-    uint32_t    lifetime;
-    uint8_t     securityMode;
-    uint8_t    *publicKey;
-    size_t      publicKeyLen;
-    uint8_t    *secretKey;
-    size_t      secretKeyLen;
-    uint8_t    *serverKey;
-    size_t      serverKeyLen;
+    uint16_t id;
+    char *uri;
+    bool isBootstrap;
+    uint32_t lifetime;
+    uint8_t securityMode;
+    uint8_t *publicKey;
+    size_t publicKeyLen;
+    uint8_t *secretKey;
+    size_t secretKeyLen;
+    uint8_t *serverKey;
+    size_t serverKeyLen;
 } read_server_t;
 
-static int prv_find_next_section(FILE *fd,
-                                 char *tag)
+static int prv_find_next_section(FILE *fd, char *tag)
 {
     char *line;
     size_t length;
@@ -45,8 +44,7 @@ static int prv_find_next_section(FILE *fd,
     line = NULL;
     length = 0;
     found = 0;
-    while (found == 0
-            && getline(&line, &length, fd) != -1) {
+    while (found == 0 && getline(&line, &length, fd) != -1) {
         if (line[0] == '[') {
             int i;
 
@@ -73,9 +71,7 @@ static int prv_find_next_section(FILE *fd,
 
 // returns -1 for error, 0 if not found (end of section or file)
 // and 1 if found
-static int prv_read_key_value(FILE *fd,
-                              char **keyP,
-                              char **valueP)
+static int prv_read_key_value(FILE *fd, char **keyP, char **valueP)
 {
     char *line;
     fpos_t prevPos;
@@ -100,9 +96,7 @@ static int prv_read_key_value(FILE *fd,
             start++;
         }
         // ignore empty and commented lines
-        if (start != length
-                && line[start] != ';'
-                && line[start] != '#') {
+        if (start != length && line[start] != ';' && line[start] != '#') {
             break;
         }
 
@@ -130,8 +124,7 @@ static int prv_read_key_value(FILE *fd,
         middle++;
     }
     // invalid lines
-    if (middle == start
-            || middle == length) {
+    if (middle == start || middle == length) {
         lwm2m_free(line);
         return -1;
     }
@@ -154,7 +147,7 @@ static int prv_read_key_value(FILE *fd,
         return -1;
     }
 
-    middle += 1 ;
+    middle += 1;
     while (middle < end && isspace(line[middle] & 0xff)) {
         middle++;
     }
@@ -187,8 +180,7 @@ static int prv_readDigit(char digit)
     return -1;
 }
 
-static size_t prv_readSecurityKey(char *value,
-                                  uint8_t **resultP)
+static size_t prv_readSecurityKey(char *value, uint8_t **resultP)
 {
     size_t length;
     size_t charIndex;
@@ -327,13 +319,10 @@ static read_server_t *prv_read_next_server(FILE *fd)
     if (res == -1) {
         goto error;
     }
-    if (readSrvP->id == 0
-            || readSrvP->uri == 0
-            || (readSrvP->securityMode != LWM2M_SECURITY_MODE_NONE
-                && (readSrvP->publicKey == NULL || readSrvP->secretKey == NULL))
-            || (readSrvP->serverKey == NULL
-                && (readSrvP->securityMode == LWM2M_SECURITY_MODE_RAW_PUBLIC_KEY
-                    || readSrvP->securityMode == LWM2M_SECURITY_MODE_CERTIFICATE))) {
+    if (readSrvP->id == 0 || readSrvP->uri == 0 || (readSrvP->securityMode != LWM2M_SECURITY_MODE_NONE &&
+                                                    (readSrvP->publicKey == NULL || readSrvP->secretKey == NULL)) ||
+        (readSrvP->serverKey == NULL && (readSrvP->securityMode == LWM2M_SECURITY_MODE_RAW_PUBLIC_KEY ||
+                                         readSrvP->securityMode == LWM2M_SECURITY_MODE_CERTIFICATE))) {
         goto error;
     }
 
@@ -365,8 +354,7 @@ error:
     return NULL;
 }
 
-static int prv_add_server(bs_info_t *infoP,
-                          read_server_t *dataP)
+static int prv_add_server(bs_info_t *infoP, read_server_t *dataP)
 {
     lwm2m_data_t *tlvP;
     int size;
@@ -517,8 +505,7 @@ static bs_endpoint_info_t *prv_read_next_endpoint(FILE *fd)
 
 
             if (lwm2m_stringToUri(value, strlen(value), &uri) == 0) {
-                if (value[0] == '/'
-                        && value[1] == 0) {
+                if (value[0] == '/' && value[1] == 0) {
                     uri.flag = 0;
                 } else {
                     goto error;
@@ -645,7 +632,7 @@ error:
     return NULL;
 }
 
-bs_info_t   *bs_get_info(FILE *fd)
+bs_info_t *bs_get_info(FILE *fd)
 {
     bs_info_t *infoP;
     read_server_t *readSrvP;
@@ -695,8 +682,7 @@ bs_info_t   *bs_get_info(FILE *fd)
                     goto error;
                 }
             } else {
-                if (otherP->name != NULL
-                        && strcmp(cltInfoP->name, otherP->name) == 0) {
+                if (otherP->name != NULL && strcmp(cltInfoP->name, otherP->name) == 0) {
                     goto error;
                 }
             }
@@ -738,8 +724,7 @@ bs_info_t   *bs_get_info(FILE *fd)
                     } else {
                         cmdP = cmdP->next;
                     }
-                }
-                break;
+                } break;
 
                 case BS_DELETE:
                 default:

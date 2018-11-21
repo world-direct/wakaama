@@ -40,25 +40,25 @@
 
 #include "liblwm2m.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // ---- private object "Firmware" specific defines ----
 // Resource Id's:
-#define RES_M_PACKAGE                   0
-#define RES_M_PACKAGE_URI               1
-#define RES_M_UPDATE                    2
-#define RES_M_STATE                     3
-#define RES_M_UPDATE_RESULT             5
-#define RES_O_PKG_NAME                  6
-#define RES_O_PKG_VERSION               7
-#define RES_O_UPDATE_PROTOCOL           8
-#define RES_M_UPDATE_METHOD             9
+#define RES_M_PACKAGE 0
+#define RES_M_PACKAGE_URI 1
+#define RES_M_UPDATE 2
+#define RES_M_STATE 3
+#define RES_M_UPDATE_RESULT 5
+#define RES_O_PKG_NAME 6
+#define RES_O_PKG_VERSION 7
+#define RES_O_UPDATE_PROTOCOL 8
+#define RES_M_UPDATE_METHOD 9
 
-#define LWM2M_FIRMWARE_PROTOCOL_NUM     4
-#define LWM2M_FIRMWARE_PROTOCOL_NULL    ((uint8_t)-1)
+#define LWM2M_FIRMWARE_PROTOCOL_NUM 4
+#define LWM2M_FIRMWARE_PROTOCOL_NULL ((uint8_t)-1)
 
 typedef struct {
     uint8_t state;
@@ -69,10 +69,7 @@ typedef struct {
     uint8_t delivery_method;
 } firmware_data_t;
 
-static uint8_t prv_firmware_read(uint16_t instanceId,
-                                 int *numDataP,
-                                 lwm2m_data_t **dataArrayP,
-                                 lwm2m_object_t *objectP)
+static uint8_t prv_firmware_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     int i;
     uint8_t result;
@@ -134,7 +131,7 @@ static uint8_t prv_firmware_read(uint16_t instanceId,
                 lwm2m_data_t *subTlvP = NULL;
 
                 while ((num < LWM2M_FIRMWARE_PROTOCOL_NUM) &&
-                        (data->protocol_support[num] != LWM2M_FIRMWARE_PROTOCOL_NULL)) {
+                       (data->protocol_support[num] != LWM2M_FIRMWARE_PROTOCOL_NULL)) {
                     num++;
                 }
 
@@ -171,10 +168,7 @@ static uint8_t prv_firmware_read(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_firmware_write(uint16_t instanceId,
-                                  int numData,
-                                  lwm2m_data_t *dataArray,
-                                  lwm2m_object_t *objectP)
+static uint8_t prv_firmware_write(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     int i;
     uint8_t result;
@@ -209,11 +203,8 @@ static uint8_t prv_firmware_write(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_firmware_execute(uint16_t instanceId,
-                                    uint16_t resourceId,
-                                    uint8_t *buffer,
-                                    int length,
-                                    lwm2m_object_t *objectP)
+static uint8_t
+prv_firmware_execute(uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
     firmware_data_t *data = (firmware_data_t *)(objectP->userData);
 
@@ -249,8 +240,7 @@ void display_firmware_object(lwm2m_object_t *object)
     firmware_data_t *data = (firmware_data_t *)object->userData;
     fprintf(stdout, "  /%u: Firmware object:\r\n", object->objID);
     if (NULL != data) {
-        fprintf(stdout, "    state: %u, result: %u\r\n", data->state,
-                data->result);
+        fprintf(stdout, "    state: %u, result: %u\r\n", data->state, data->result);
     }
 #endif
 }
@@ -258,7 +248,8 @@ void display_firmware_object(lwm2m_object_t *object)
 lwm2m_object_t *get_object_firmware(void)
 {
     /*
-     * The get_object_firmware function create the object itself and return a pointer to the structure that represent it.
+     * The get_object_firmware function create the object itself and return a pointer to the structure that represent
+     * it.
      */
     lwm2m_object_t *firmwareObj;
 
@@ -287,13 +278,14 @@ lwm2m_object_t *get_object_firmware(void)
 
         /*
          * And the private function that will access the object.
-         * Those function will be called when a read/write/execute query is made by the server. In fact the library don't need to
+         * Those function will be called when a read/write/execute query is made by the server. In fact the library
+         * don't need to
          * know the resources of the object, only the server does.
          */
-        firmwareObj->readFunc    = prv_firmware_read;
-        firmwareObj->writeFunc   = prv_firmware_write;
+        firmwareObj->readFunc = prv_firmware_read;
+        firmwareObj->writeFunc = prv_firmware_write;
         firmwareObj->executeFunc = prv_firmware_execute;
-        firmwareObj->userData    = lwm2m_malloc(sizeof(firmware_data_t));
+        firmwareObj->userData = lwm2m_malloc(sizeof(firmware_data_t));
 
         /*
          * Also some user data can be stored in the object with a private structure containing the needed variables
@@ -335,4 +327,3 @@ void free_object_firmware(lwm2m_object_t *objectP)
     }
     lwm2m_free(objectP);
 }
-

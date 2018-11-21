@@ -27,14 +27,16 @@ typedef struct MemoryEntry {
     struct MemoryEntry *next;
     const char *file;
     const char *function;
-    int         lineno;
-    size_t      size;
-    int         count;
-    uint32_t    data[1];
+    int lineno;
+    size_t size;
+    int count;
+    uint32_t data[1];
 } memory_entry_t;
 
-static memory_entry_t prv_memory_malloc_list = { .next = NULL, .file = "head", .function = "malloc", .lineno = 0, .size = 0, .count = 0};
-static memory_entry_t prv_memory_free_list = { .next = NULL, .file = "head", .function = "free", .lineno = 0, .size = 0, .count = 0};
+static memory_entry_t prv_memory_malloc_list = {
+    .next = NULL, .file = "head", .function = "malloc", .lineno = 0, .size = 0, .count = 0};
+static memory_entry_t prv_memory_free_list = {
+    .next = NULL, .file = "head", .function = "free", .lineno = 0, .size = 0, .count = 0};
 
 static memory_entry_t *prv_memory_find_previous(memory_entry_t *list, void *memory)
 {
@@ -131,7 +133,13 @@ void trace_print(int loops, int level)
             int entries = 0;
             memory_entry_t *entry = prv_memory_malloc_list.next;
             while (NULL != entry) {
-                fprintf(stdout, "memory: #%d, %lu bytes, %s, %d, %s\n", entry->count, (unsigned long) entry->size, entry->file, entry->lineno, entry->function);
+                fprintf(stdout,
+                        "memory: #%d, %lu bytes, %s, %d, %s\n",
+                        entry->count,
+                        (unsigned long)entry->size,
+                        entry->file,
+                        entry->lineno,
+                        entry->function);
                 ++entries;
                 total += entry->size;
                 entry = entry->next;
@@ -140,10 +148,16 @@ void trace_print(int loops, int level)
                 fprintf(stderr, "memory: error %d entries != %d\n", prv_memory_malloc_list.count, entries);
             }
             if (total != prv_memory_malloc_list.size) {
-                fprintf(stdout, "memory: error %lu total bytes != %lu\n", (unsigned long) prv_memory_malloc_list.size, (unsigned long) total);
+                fprintf(stdout,
+                        "memory: error %lu total bytes != %lu\n",
+                        (unsigned long)prv_memory_malloc_list.size,
+                        (unsigned long)total);
             }
         }
-        fprintf(stdout, "memory: %d entries, %lu total bytes\n", prv_memory_malloc_list.count, (unsigned long) prv_memory_malloc_list.size);
+        fprintf(stdout,
+                "memory: %d entries, %lu total bytes\n",
+                prv_memory_malloc_list.count,
+                (unsigned long)prv_memory_malloc_list.size);
     }
 }
 

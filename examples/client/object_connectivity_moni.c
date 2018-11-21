@@ -38,54 +38,53 @@
 
 #include "liblwm2m.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // Resource Id's:
-#define RES_M_NETWORK_BEARER            0
-#define RES_M_AVL_NETWORK_BEARER        1
-#define RES_M_RADIO_SIGNAL_STRENGTH     2
-#define RES_O_LINK_QUALITY              3
-#define RES_M_IP_ADDRESSES              4
-#define RES_O_ROUTER_IP_ADDRESS         5
-#define RES_O_LINK_UTILIZATION          6
-#define RES_O_APN                       7
-#define RES_O_CELL_ID                   8
-#define RES_O_SMNC                      9
-#define RES_O_SMCC                      10
+#define RES_M_NETWORK_BEARER 0
+#define RES_M_AVL_NETWORK_BEARER 1
+#define RES_M_RADIO_SIGNAL_STRENGTH 2
+#define RES_O_LINK_QUALITY 3
+#define RES_M_IP_ADDRESSES 4
+#define RES_O_ROUTER_IP_ADDRESS 5
+#define RES_O_LINK_UTILIZATION 6
+#define RES_O_APN 7
+#define RES_O_CELL_ID 8
+#define RES_O_SMNC 9
+#define RES_O_SMCC 10
 
-#define VALUE_NETWORK_BEARER_GSM    0   //GSM see 
-#define VALUE_AVL_NETWORK_BEARER_1  0   //GSM
-#define VALUE_AVL_NETWORK_BEARER_2  21  //WLAN
-#define VALUE_AVL_NETWORK_BEARER_3  41  //Ethernet
-#define VALUE_AVL_NETWORK_BEARER_4  42  //DSL
-#define VALUE_AVL_NETWORK_BEARER_5  43  //PLC
-#define VALUE_IP_ADDRESS_1              "192.168.178.101"
-#define VALUE_IP_ADDRESS_2              "192.168.178.102"
-#define VALUE_ROUTER_IP_ADDRESS_1       "192.168.178.001"
-#define VALUE_ROUTER_IP_ADDRESS_2       "192.168.178.002"
-#define VALUE_APN_1                     "web.vodafone.de"
-#define VALUE_APN_2                     "cda.vodafone.de"
-#define VALUE_CELL_ID                   69696969
-#define VALUE_RADIO_SIGNAL_STRENGTH     80                  //dBm
-#define VALUE_LINK_QUALITY              98
-#define VALUE_LINK_UTILIZATION          666
-#define VALUE_SMNC                      33
-#define VALUE_SMCC                      44
+#define VALUE_NETWORK_BEARER_GSM 0    // GSM see
+#define VALUE_AVL_NETWORK_BEARER_1 0  // GSM
+#define VALUE_AVL_NETWORK_BEARER_2 21 // WLAN
+#define VALUE_AVL_NETWORK_BEARER_3 41 // Ethernet
+#define VALUE_AVL_NETWORK_BEARER_4 42 // DSL
+#define VALUE_AVL_NETWORK_BEARER_5 43 // PLC
+#define VALUE_IP_ADDRESS_1 "192.168.178.101"
+#define VALUE_IP_ADDRESS_2 "192.168.178.102"
+#define VALUE_ROUTER_IP_ADDRESS_1 "192.168.178.001"
+#define VALUE_ROUTER_IP_ADDRESS_2 "192.168.178.002"
+#define VALUE_APN_1 "web.vodafone.de"
+#define VALUE_APN_2 "cda.vodafone.de"
+#define VALUE_CELL_ID 69696969
+#define VALUE_RADIO_SIGNAL_STRENGTH 80 // dBm
+#define VALUE_LINK_QUALITY 98
+#define VALUE_LINK_UTILIZATION 666
+#define VALUE_SMNC 33
+#define VALUE_SMCC 44
 
 typedef struct {
-    char ipAddresses[2][16];        // limited to 2!
-    char routerIpAddresses[2][16];  // limited to 2!
+    char ipAddresses[2][16];       // limited to 2!
+    char routerIpAddresses[2][16]; // limited to 2!
     long cellId;
     int signalStrength;
     int linkQuality;
     int linkUtilization;
 } conn_m_data_t;
 
-static uint8_t prv_set_value(lwm2m_data_t *dataP,
-                             conn_m_data_t *connDataP)
+static uint8_t prv_set_value(lwm2m_data_t *dataP, conn_m_data_t *connDataP)
 {
     switch (dataP->id) {
         case RES_M_NETWORK_BEARER:
@@ -93,112 +92,104 @@ static uint8_t prv_set_value(lwm2m_data_t *dataP,
             return COAP_205_CONTENT;
 
         case RES_M_AVL_NETWORK_BEARER: {
-            int riCnt = 1;   // reduced to 1 instance to fit in one block size
+            int riCnt = 1; // reduced to 1 instance to fit in one block size
             lwm2m_data_t *subTlvP;
             subTlvP = lwm2m_data_new(riCnt);
-            subTlvP[0].id    = 0;
+            subTlvP[0].id = 0;
             lwm2m_data_encode_int(VALUE_AVL_NETWORK_BEARER_1, subTlvP);
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
-            return COAP_205_CONTENT ;
+            return COAP_205_CONTENT;
         }
 
-        case RES_M_RADIO_SIGNAL_STRENGTH: //s-int
+        case RES_M_RADIO_SIGNAL_STRENGTH: // s-int
             lwm2m_data_encode_int(connDataP->signalStrength, dataP);
             return COAP_205_CONTENT;
 
-        case RES_O_LINK_QUALITY: //s-int
+        case RES_O_LINK_QUALITY: // s-int
             lwm2m_data_encode_int(connDataP->linkQuality, dataP);
-            return COAP_205_CONTENT ;
+            return COAP_205_CONTENT;
 
         case RES_M_IP_ADDRESSES: {
-            int ri, riCnt = 1;   // reduced to 1 instance to fit in one block size
+            int ri, riCnt = 1; // reduced to 1 instance to fit in one block size
             lwm2m_data_t *subTlvP = lwm2m_data_new(riCnt);
             for (ri = 0; ri < riCnt; ri++) {
                 subTlvP[ri].id = ri;
                 lwm2m_data_encode_string(connDataP->ipAddresses[ri], subTlvP + ri);
             }
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
-            return COAP_205_CONTENT ;
-        }
-        break;
+            return COAP_205_CONTENT;
+        } break;
 
         case RES_O_ROUTER_IP_ADDRESS: {
-            int ri, riCnt = 1;   // reduced to 1 instance to fit in one block size
+            int ri, riCnt = 1; // reduced to 1 instance to fit in one block size
             lwm2m_data_t *subTlvP = lwm2m_data_new(riCnt);
             for (ri = 0; ri < riCnt; ri++) {
                 subTlvP[ri].id = ri;
                 lwm2m_data_encode_string(connDataP->routerIpAddresses[ri], subTlvP + ri);
             }
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
-            return COAP_205_CONTENT ;
-        }
-        break;
+            return COAP_205_CONTENT;
+        } break;
 
         case RES_O_LINK_UTILIZATION:
             lwm2m_data_encode_int(connDataP->linkUtilization, dataP);
             return COAP_205_CONTENT;
 
         case RES_O_APN: {
-            int riCnt = 1;   // reduced to 1 instance to fit in one block size
+            int riCnt = 1; // reduced to 1 instance to fit in one block size
             lwm2m_data_t *subTlvP;
             subTlvP = lwm2m_data_new(riCnt);
-            subTlvP[0].id     = 0;
+            subTlvP[0].id = 0;
             lwm2m_data_encode_string(VALUE_APN_1, subTlvP);
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
             return COAP_205_CONTENT;
-        }
-        break;
+        } break;
 
         case RES_O_CELL_ID:
             lwm2m_data_encode_int(connDataP->cellId, dataP);
-            return COAP_205_CONTENT ;
+            return COAP_205_CONTENT;
 
         case RES_O_SMNC:
             lwm2m_data_encode_int(VALUE_SMNC, dataP);
-            return COAP_205_CONTENT ;
+            return COAP_205_CONTENT;
 
         case RES_O_SMCC:
             lwm2m_data_encode_int(VALUE_SMCC, dataP);
-            return COAP_205_CONTENT ;
+            return COAP_205_CONTENT;
 
         default:
-            return COAP_404_NOT_FOUND ;
+            return COAP_404_NOT_FOUND;
     }
 }
 
-static uint8_t prv_read(uint16_t instanceId,
-                        int *numDataP,
-                        lwm2m_data_t **dataArrayP,
-                        lwm2m_object_t *objectP)
+static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     uint8_t result;
     int i;
 
     // this is a single instance object
     if (instanceId != 0) {
-        return COAP_404_NOT_FOUND ;
+        return COAP_404_NOT_FOUND;
     }
 
     // is the server asking for the full object ?
     if (*numDataP == 0) {
-        uint16_t resList[] = {
-            RES_M_NETWORK_BEARER,
-            RES_M_AVL_NETWORK_BEARER,
-            RES_M_RADIO_SIGNAL_STRENGTH,
-            RES_O_LINK_QUALITY,
-            RES_M_IP_ADDRESSES,
-            RES_O_ROUTER_IP_ADDRESS,
-            RES_O_LINK_UTILIZATION,
-            RES_O_APN,
-            RES_O_CELL_ID,
-            RES_O_SMNC,
-            RES_O_SMCC
-        };
+        uint16_t resList[] = {RES_M_NETWORK_BEARER,
+                              RES_M_AVL_NETWORK_BEARER,
+                              RES_M_RADIO_SIGNAL_STRENGTH,
+                              RES_O_LINK_QUALITY,
+                              RES_M_IP_ADDRESSES,
+                              RES_O_ROUTER_IP_ADDRESS,
+                              RES_O_LINK_UTILIZATION,
+                              RES_O_APN,
+                              RES_O_CELL_ID,
+                              RES_O_SMNC,
+                              RES_O_SMCC};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
         if (*dataArrayP == NULL) {
-            return COAP_500_INTERNAL_SERVER_ERROR ;
+            return COAP_500_INTERNAL_SERVER_ERROR;
         }
         *numDataP = nbRes;
         for (i = 0; i < nbRes; i++) {
@@ -218,11 +209,12 @@ static uint8_t prv_read(uint16_t instanceId,
 lwm2m_object_t *get_object_conn_m(void)
 {
     /*
-     * The get_object_conn_m() function create the object itself and return a pointer to the structure that represent it.
+     * The get_object_conn_m() function create the object itself and return a pointer to the structure that represent
+     * it.
      */
     lwm2m_object_t *connObj;
 
-    connObj = (lwm2m_object_t *) lwm2m_malloc(sizeof(lwm2m_object_t));
+    connObj = (lwm2m_object_t *)lwm2m_malloc(sizeof(lwm2m_object_t));
 
     if (NULL != connObj) {
         memset(connObj, 0, sizeof(lwm2m_object_t));
@@ -246,7 +238,8 @@ lwm2m_object_t *get_object_conn_m(void)
 
         /*
          * And the private function that will access the object.
-         * Those function will be called when a read/write/execute query is made by the server. In fact the library don't need to
+         * Those function will be called when a read/write/execute query is made by the server. In fact the library
+         * don't need to
          * know the resources of the object, only the server does.
          */
         connObj->readFunc = prv_read;
@@ -257,13 +250,13 @@ lwm2m_object_t *get_object_conn_m(void)
          * Also some user data can be stored in the object with a private structure containing the needed variables
          */
         if (NULL != connObj->userData) {
-            conn_m_data_t *myData = (conn_m_data_t *) connObj->userData;
-            myData->cellId          = VALUE_CELL_ID;
-            myData->signalStrength  = VALUE_RADIO_SIGNAL_STRENGTH;
-            myData->linkQuality     = VALUE_LINK_QUALITY;
+            conn_m_data_t *myData = (conn_m_data_t *)connObj->userData;
+            myData->cellId = VALUE_CELL_ID;
+            myData->signalStrength = VALUE_RADIO_SIGNAL_STRENGTH;
+            myData->linkQuality = VALUE_LINK_QUALITY;
             myData->linkUtilization = VALUE_LINK_UTILIZATION;
-            strcpy(myData->ipAddresses[0],       VALUE_IP_ADDRESS_1);
-            strcpy(myData->ipAddresses[1],       VALUE_IP_ADDRESS_2);
+            strcpy(myData->ipAddresses[0], VALUE_IP_ADDRESS_1);
+            strcpy(myData->ipAddresses[1], VALUE_IP_ADDRESS_2);
             strcpy(myData->routerIpAddresses[0], VALUE_ROUTER_IP_ADDRESS_1);
             strcpy(myData->routerIpAddresses[1], VALUE_ROUTER_IP_ADDRESS_2);
         } else {
@@ -281,8 +274,7 @@ void free_object_conn_m(lwm2m_object_t *objectP)
     lwm2m_free(objectP);
 }
 
-uint8_t connectivity_moni_change(lwm2m_data_t *dataArray,
-                                 lwm2m_object_t *objectP)
+uint8_t connectivity_moni_change(lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     int64_t value;
     uint8_t result;
@@ -346,4 +338,3 @@ uint8_t connectivity_moni_change(lwm2m_data_t *dataArray,
 
     return result;
 }
-

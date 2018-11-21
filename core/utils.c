@@ -46,16 +46,14 @@
 
 */
 
-#include "internals.h"
+#include <float.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <float.h>
+#include "internals.h"
 
 
-int utils_textToInt(uint8_t *buffer,
-                    int length,
-                    int64_t *dataP)
+int utils_textToInt(uint8_t *buffer, int length, int64_t *dataP)
 {
     uint64_t result = 0;
     int sign = 1;
@@ -96,9 +94,7 @@ int utils_textToInt(uint8_t *buffer,
     return 1;
 }
 
-int utils_textToFloat(uint8_t *buffer,
-                      int length,
-                      double *dataP)
+int utils_textToFloat(uint8_t *buffer, int length, double *dataP)
 {
     double result;
     int sign;
@@ -156,9 +152,7 @@ int utils_textToFloat(uint8_t *buffer,
     return 1;
 }
 
-size_t utils_intToText(int64_t data,
-                       uint8_t *string,
-                       size_t length)
+size_t utils_intToText(int64_t data, uint8_t *string, size_t length)
 {
     int index;
     bool minus;
@@ -175,7 +169,7 @@ size_t utils_intToText(int64_t data,
     do {
         string[index] = '0' + data % 10;
         data /= 10;
-        index --;
+        index--;
     } while (index >= 0 && data > 0);
 
     if (data > 0) {
@@ -200,9 +194,7 @@ size_t utils_intToText(int64_t data,
     return result;
 }
 
-size_t utils_floatToText(double data,
-                         uint8_t *string,
-                         size_t length)
+size_t utils_floatToText(double data, uint8_t *string, size_t length)
 {
     size_t intLength;
     size_t decLength;
@@ -228,7 +220,7 @@ size_t utils_floatToText(double data,
     if (intPart == 0 && data < 0) {
         // deal with numbers between -1 and 0
         if (length < 4) {
-            return 0;    // "-0.n"
+            return 0; // "-0.n"
         }
         string[0] = '-';
         string[1] = '0';
@@ -265,8 +257,7 @@ size_t utils_floatToText(double data,
     return intLength + decLength;
 }
 
-lwm2m_binding_t utils_stringToBinding(uint8_t *buffer,
-                                      size_t length)
+lwm2m_binding_t utils_stringToBinding(uint8_t *buffer, size_t length)
 {
     if (length == 0) {
         return BINDING_UNKNOWN;
@@ -345,14 +336,12 @@ lwm2m_media_type_t utils_convertMediaType(coap_content_type_t type)
 }
 
 #ifdef LWM2M_CLIENT_MODE
-lwm2m_server_t *utils_findServer(lwm2m_context_t *contextP,
-                                 void *fromSessionH)
+lwm2m_server_t *utils_findServer(lwm2m_context_t *contextP, void *fromSessionH)
 {
     lwm2m_server_t *targetP;
 
     targetP = contextP->serverList;
-    while (targetP != NULL
-            && false == lwm2m_session_is_equal(targetP->sessionH, fromSessionH, contextP->userData)) {
+    while (targetP != NULL && false == lwm2m_session_is_equal(targetP->sessionH, fromSessionH, contextP->userData)) {
         targetP = targetP->next;
     }
 
@@ -373,16 +362,14 @@ lwm2m_server_t *utils_findServerByShortServerId(lwm2m_context_t *contextP, uint1
 
 #endif
 
-lwm2m_server_t *utils_findBootstrapServer(lwm2m_context_t *contextP,
-                                          void *fromSessionH)
+lwm2m_server_t *utils_findBootstrapServer(lwm2m_context_t *contextP, void *fromSessionH)
 {
 #ifdef LWM2M_CLIENT_MODE
 
     lwm2m_server_t *targetP;
 
     targetP = contextP->bootstrapServerList;
-    while (targetP != NULL
-            && false == lwm2m_session_is_equal(targetP->sessionH, fromSessionH, contextP->userData)) {
+    while (targetP != NULL && false == lwm2m_session_is_equal(targetP->sessionH, fromSessionH, contextP->userData)) {
         targetP = targetP->next;
     }
 
@@ -407,36 +394,32 @@ int utils_isAltPathValid(const char *altPath)
         return 0;
     }
 
-    for (i = 1 ; altPath[i] != 0 ; i++) {
+    for (i = 1; altPath[i] != 0; i++) {
         // TODO: Support multi-segment alternative path
         if (altPath[i] == '/') {
             return 0;
         }
         // TODO: Check needs for sub-delims, ':' and '@'
-        if ((altPath[i] < 'A' || altPath[i] > 'Z')      // ALPHA
-                && (altPath[i] < 'a' || altPath[i] > 'z')
-                && (altPath[i] < '0' || altPath[i] > '9')      // DIGIT
-                && (altPath[i] != '-')                         // Other unreserved
-                && (altPath[i] != '.')
-                && (altPath[i] != '_')
-                && (altPath[i] != '~')
-                && (altPath[i] != '%')) {                      // pct_encoded
+        if ((altPath[i] < 'A' || altPath[i] > 'Z') // ALPHA
+            &&
+            (altPath[i] < 'a' || altPath[i] > 'z') && (altPath[i] < '0' || altPath[i] > '9') // DIGIT
+            &&
+            (altPath[i] != '-') // Other unreserved
+            &&
+            (altPath[i] != '.') && (altPath[i] != '_') && (altPath[i] != '~') && (altPath[i] != '%')) { // pct_encoded
             return 0;
         }
-
     }
     return 1;
 }
 
 // copy a string in a buffer.
 // return the number of copied bytes or -1 if the buffer is not large enough
-int utils_stringCopy(char *buffer,
-                     size_t length,
-                     const char *str)
+int utils_stringCopy(char *buffer, size_t length, const char *str)
 {
     size_t i;
 
-    for (i = 0 ; i < length && str[i] != 0 ; i++) {
+    for (i = 0; i < length && str[i] != 0; i++) {
         buffer[i] = str[i];
     }
 
@@ -449,9 +432,7 @@ int utils_stringCopy(char *buffer,
     return (int)i;
 }
 
-void utils_copyValue(void *dst,
-                     const void *src,
-                     size_t len)
+void utils_copyValue(void *dst, const void *src, size_t len)
 {
 #ifdef LWM2M_BIG_ENDIAN
     memcpy(dst, src, len);
@@ -469,15 +450,12 @@ void utils_copyValue(void *dst,
 
 #define PRV_B64_PADDING '='
 
-static char b64Alphabet[64] = {
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-    'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
-};
+static char b64Alphabet[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                               'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                               'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                               'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
-static void prv_encodeBlock(uint8_t input[3],
-                            uint8_t output[4])
+static void prv_encodeBlock(uint8_t input[3], uint8_t output[4])
 {
     output[0] = b64Alphabet[input[0] >> 2];
     output[1] = b64Alphabet[((input[0] & 0x03) << 4) | (input[1] >> 4)];
@@ -499,7 +477,6 @@ static inline int base64_find_index(char c)
         }
     }
     return -1;
-
 }
 
 size_t utils_base64GetSize(size_t dataLen)
@@ -514,10 +491,7 @@ size_t utils_base64GetSize(size_t dataLen)
     return result_len;
 }
 
-size_t utils_base64Encode(uint8_t *dataP,
-                          size_t dataLen,
-                          uint8_t *bufferP,
-                          size_t bufferLen)
+size_t utils_base64Encode(uint8_t *dataP, size_t dataLen, uint8_t *bufferP, size_t bufferLen)
 {
     unsigned int data_index;
     unsigned int result_index;
@@ -576,7 +550,6 @@ size_t utils_base64GetDecodedSize(uint8_t *bufferP, size_t bufferLen)
     }
 
     return result_len;
-
 }
 
 size_t utils_base64Decode(uint8_t *bufferP, size_t bufferLen, uint8_t *dataP, size_t dataLen)
@@ -603,7 +576,7 @@ size_t utils_base64Decode(uint8_t *bufferP, size_t bufferLen, uint8_t *dataP, si
 
             char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
             char_array_3[1] = ((char_array_4[1] & 0x0f) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-            char_array_3[2] = ((char_array_4[2] & 0x03) << 6) +   char_array_4[3];
+            char_array_3[2] = ((char_array_4[2] & 0x03) << 6) + char_array_4[3];
 
             for (i = 0; (i < 3); i++) {
                 dataP[out_++] = char_array_3[i];
@@ -627,7 +600,6 @@ size_t utils_base64Decode(uint8_t *bufferP, size_t bufferLen, uint8_t *dataP, si
     }
 
     return out_;
-
 }
 
 lwm2m_data_type_t utils_depthToDatatype(uri_depth_t depth)

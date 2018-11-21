@@ -17,16 +17,19 @@
 
 #include <stdio.h>
 
-#define COMMAND_END_LIST {NULL, NULL, NULL, NULL, NULL}
+#define COMMAND_END_LIST             \
+    {                                \
+        NULL, NULL, NULL, NULL, NULL \
+    }
 
 typedef void (*command_handler_t)(char *args, void *user_data);
 
 typedef struct {
-    char             *name;
-    char             *shortDesc;
-    char             *longDesc;
+    char *name;
+    char *shortDesc;
+    char *longDesc;
     command_handler_t callback;
-    void             *userData;
+    void *userData;
 } command_desc_t;
 
 

@@ -19,46 +19,46 @@
 
 #include "liblwm2m.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/stat.h>
+#include <ctype.h>
 #include <errno.h>
-#include <signal.h>
 #include <inttypes.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
+#include "bootstrap_info.h"
 #include "commandline.h"
 #include "connection.h"
-#include "bootstrap_info.h"
 
-#define CMD_STATUS_NEW  0
+#define CMD_STATUS_NEW 0
 #define CMD_STATUS_SENT 1
-#define CMD_STATUS_OK   2
+#define CMD_STATUS_OK 2
 #define CMD_STATUS_FAIL 3
 
 typedef struct _endpoint_ {
     struct _endpoint_ *next;
-    char           *name;
-    void           *handle;
-    bs_command_t   *cmdList;
-    uint8_t         status;
+    char *name;
+    void *handle;
+    bs_command_t *cmdList;
+    uint8_t status;
 } endpoint_t;
 
 typedef struct {
-    int               sock;
-    connection_t     *connList;
+    int sock;
+    connection_t *connList;
     lwm2m_context_t *lwm2mH;
-    bs_info_t        *bsInfo;
-    endpoint_t       *endpointList;
-    int               addressFamily;
+    bs_info_t *bsInfo;
+    endpoint_t *endpointList;
+    int addressFamily;
 } internal_data_t;
 
 /*
@@ -69,8 +69,7 @@ typedef struct {
 
 static int g_quit = 0;
 
-static void prv_quit(char *buffer,
-                     void *user_data)
+static void prv_quit(char *buffer, void *user_data)
 {
     g_quit = 1;
 }
@@ -80,8 +79,7 @@ void handle_sigint(int signum)
     prv_quit(NULL, NULL);
 }
 
-void print_usage(char *filename,
-                 char *port)
+void print_usage(char *filename, char *port)
 {
     fprintf(stdout, "Usage: bootstap_server [OPTION]\r\n");
     fprintf(stderr, "Launch a LWM2M Bootstrap Server.\r\n\n");
@@ -92,8 +90,7 @@ void print_usage(char *filename,
     fprintf(stdout, "\r\n");
 }
 
-static void prv_print_uri(FILE *fd,
-                          lwm2m_uri_t *uriP)
+static void prv_print_uri(FILE *fd, lwm2m_uri_t *uriP)
 {
     fprintf(fd, "/");
     if (uriP != NULL) {
@@ -116,23 +113,20 @@ static void prv_endpoint_free(endpoint_t *endP)
     }
 }
 
-static endpoint_t *prv_endpoint_find(internal_data_t *dataP,
-                                     void *sessionH)
+static endpoint_t *prv_endpoint_find(internal_data_t *dataP, void *sessionH)
 {
     endpoint_t *endP;
 
     endP = dataP->endpointList;
 
-    while (endP != NULL
-            && endP->handle != sessionH) {
+    while (endP != NULL && endP->handle != sessionH) {
         endP = endP->next;
     }
 
     return endP;
 }
 
-static endpoint_t *prv_endpoint_new(internal_data_t *dataP,
-                                    void *sessionH)
+static endpoint_t *prv_endpoint_new(internal_data_t *dataP, void *sessionH)
 {
     endpoint_t *endP;
 
@@ -142,8 +136,7 @@ static endpoint_t *prv_endpoint_new(internal_data_t *dataP,
         endpoint_t *parentP;
 
         parentP = dataP->endpointList;
-        while (parentP != NULL
-                && parentP->next != endP) {
+        while (parentP != NULL && parentP->next != endP) {
             parentP = parentP->next;
         }
         if (parentP != NULL) {
@@ -163,9 +156,8 @@ static void prv_endpoint_clean(internal_data_t *dataP)
     endpoint_t *endP;
     endpoint_t *parentP;
 
-    while (dataP->endpointList != NULL
-            && (dataP->endpointList->cmdList == NULL
-                || dataP->endpointList->status == CMD_STATUS_FAIL)) {
+    while (dataP->endpointList != NULL &&
+           (dataP->endpointList->cmdList == NULL || dataP->endpointList->status == CMD_STATUS_FAIL)) {
         endP = dataP->endpointList->next;
         prv_endpoint_free(dataP->endpointList);
         dataP->endpointList = endP;
@@ -178,8 +170,7 @@ static void prv_endpoint_clean(internal_data_t *dataP)
             endpoint_t *nextP;
 
             nextP = endP->next;
-            if (endP->cmdList == NULL
-                    || endP->status == CMD_STATUS_FAIL) {
+            if (endP->cmdList == NULL || endP->status == CMD_STATUS_FAIL) {
                 prv_endpoint_free(endP);
                 parentP->next = nextP;
             } else {
@@ -190,8 +181,7 @@ static void prv_endpoint_clean(internal_data_t *dataP)
     }
 }
 
-static void prv_send_command(internal_data_t *dataP,
-                             endpoint_t *endP)
+static void prv_send_command(internal_data_t *dataP, endpoint_t *endP)
 {
     int res;
 
@@ -212,8 +202,7 @@ static void prv_send_command(internal_data_t *dataP,
             bs_server_tlv_t *serverP;
 
             serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
-            if (serverP == NULL
-                    || serverP->securityData == NULL) {
+            if (serverP == NULL || serverP->securityData == NULL) {
                 endP->status = CMD_STATUS_FAIL;
                 return;
             }
@@ -226,17 +215,16 @@ static void prv_send_command(internal_data_t *dataP,
             prv_print_uri(stdout, &uri);
             fprintf(stdout, " to \"%s\"", endP->name);
 
-            res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
-        }
-        break;
+            res = lwm2m_bootstrap_write(
+                dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
+        } break;
 
         case BS_WRITE_SERVER: {
             lwm2m_uri_t uri;
             bs_server_tlv_t *serverP;
 
             serverP = (bs_server_tlv_t *)LWM2M_LIST_FIND(dataP->bsInfo->serverList, endP->cmdList->serverId);
-            if (serverP == NULL
-                    || serverP->serverData == NULL) {
+            if (serverP == NULL || serverP->serverData == NULL) {
                 endP->status = CMD_STATUS_FAIL;
                 return;
             }
@@ -249,9 +237,9 @@ static void prv_send_command(internal_data_t *dataP,
             prv_print_uri(stdout, &uri);
             fprintf(stdout, " to \"%s\"", endP->name);
 
-            res = lwm2m_bootstrap_write(dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
-        }
-        break;
+            res = lwm2m_bootstrap_write(
+                dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
+        } break;
 
         case BS_FINISH:
             fprintf(stdout, "Sending BOOTSTRAP FINISH ");
@@ -275,11 +263,7 @@ static void prv_send_command(internal_data_t *dataP,
     }
 }
 
-static int prv_bootstrap_callback(void *sessionH,
-                                  uint8_t status,
-                                  lwm2m_uri_t *uriP,
-                                  char *name,
-                                  void *userData)
+static int prv_bootstrap_callback(void *sessionH, uint8_t status, lwm2m_uri_t *uriP, char *name, void *userData)
 {
     internal_data_t *dataP = (internal_data_t *)userData;
     uint8_t result;
@@ -294,16 +278,13 @@ static int prv_bootstrap_callback(void *sessionH,
 
             // find Bootstrap Info for this endpoint
             endInfoP = dataP->bsInfo->endpointList;
-            while (endInfoP != NULL
-                    && endInfoP->name != NULL
-                    && strcmp(name, endInfoP->name) != 0) {
+            while (endInfoP != NULL && endInfoP->name != NULL && strcmp(name, endInfoP->name) != 0) {
                 endInfoP = endInfoP->next;
             }
             if (endInfoP == NULL) {
                 // find default Bootstrap Info
                 endInfoP = dataP->bsInfo->endpointList;
-                while (endInfoP != NULL
-                        && endInfoP->name != NULL) {
+                while (endInfoP != NULL && endInfoP->name != NULL) {
                     endInfoP = endInfoP->next;
                 }
             }
@@ -377,8 +358,7 @@ static int prv_bootstrap_callback(void *sessionH,
     return COAP_NO_ERROR;
 }
 
-static void prv_bootstrap_client(char *buffer,
-                                 void *user_data)
+static void prv_bootstrap_client(char *buffer, void *user_data)
 {
     internal_data_t *dataP = (internal_data_t *)user_data;
     char *uri;
@@ -402,7 +382,7 @@ static void prv_bootstrap_client(char *buffer,
     // parse uri in the form "coaps://[host]:[port]"
     if (0 == strncmp(uri, "coaps://", strlen("coaps://"))) {
         host = uri + strlen("coaps://");
-    } else if (0 == strncmp(uri, "coap://",  strlen("coap://"))) {
+    } else if (0 == strncmp(uri, "coap://", strlen("coap://"))) {
         host = uri + strlen("coap://");
     } else {
         goto syntax_error;
@@ -455,17 +435,17 @@ int main(int argc, char *argv[])
     char *filename = "bootstrap_server.ini";
     int opt;
     FILE *fd;
-    command_desc_t commands[] = {
-        {
-            "boot", "Bootstrap a client (Server Initiated).", " boot URI [NAME]\r\n"
-            "   URI: uri of the client to bootstrap\r\n"
-            "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
-            "Example: boot coap://[::1]:56830 testlwm2mclient", prv_bootstrap_client, &data
-        },
-        {"q", "Quit the server.", NULL, prv_quit, NULL},
+    command_desc_t commands[] = {{"boot",
+                                  "Bootstrap a client (Server Initiated).",
+                                  " boot URI [NAME]\r\n"
+                                  "   URI: uri of the client to bootstrap\r\n"
+                                  "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
+                                  "Example: boot coap://[::1]:56830 testlwm2mclient",
+                                  prv_bootstrap_client,
+                                  &data},
+                                 {"q", "Quit the server.", NULL, prv_quit, NULL},
 
-        COMMAND_END_LIST
-    };
+                                 COMMAND_END_LIST};
 
     memset(&data, 0, sizeof(internal_data_t));
 
@@ -473,9 +453,7 @@ int main(int argc, char *argv[])
 
     opt = 1;
     while (opt < argc) {
-        if (argv[opt] == NULL
-                || argv[opt][0] != '-'
-                || argv[opt][2] != 0) {
+        if (argv[opt] == NULL || argv[opt][0] != '-' || argv[opt][2] != 0) {
             print_usage(filename, port);
             return 0;
         }

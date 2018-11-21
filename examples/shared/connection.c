@@ -16,10 +16,10 @@
  *
  *******************************************************************************/
 
+#include "connection.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include "connection.h"
 
 // from commandline.c
 void output_buffer(FILE *stream, uint8_t *buffer, int length, int indent);
@@ -40,7 +40,7 @@ int create_socket(const char *portStr, int addressFamily)
         return -1;
     }
 
-    for (p = res ; p != NULL && s == -1 ; p = p->ai_next) {
+    for (p = res; p != NULL && s == -1; p = p->ai_next) {
         s = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (s >= 0) {
             if (-1 == bind(s, p->ai_addr, p->ai_addrlen)) {
@@ -55,16 +55,13 @@ int create_socket(const char *portStr, int addressFamily)
     return s;
 }
 
-connection_t *connection_find(connection_t *connList,
-                              struct sockaddr_storage *addr,
-                              size_t addrLen)
+connection_t *connection_find(connection_t *connList, struct sockaddr_storage *addr, size_t addrLen)
 {
     connection_t *connP;
 
     connP = connList;
     while (connP != NULL) {
-        if ((connP->addrLen == addrLen)
-                && (memcmp(&(connP->addr), addr, addrLen) == 0)) {
+        if ((connP->addrLen == addrLen) && (memcmp(&(connP->addr), addr, addrLen) == 0)) {
             return connP;
         }
         connP = connP->next;
@@ -73,10 +70,7 @@ connection_t *connection_find(connection_t *connList,
     return connP;
 }
 
-connection_t *connection_new_incoming(connection_t *connList,
-                                      int sock,
-                                      struct sockaddr *addr,
-                                      size_t addrLen)
+connection_t *connection_new_incoming(connection_t *connList, int sock, struct sockaddr *addr, size_t addrLen)
 {
     connection_t *connP;
 
@@ -91,11 +85,7 @@ connection_t *connection_new_incoming(connection_t *connList,
     return connP;
 }
 
-connection_t *connection_create(connection_t *connList,
-                                int sock,
-                                char *host,
-                                char *port,
-                                int addressFamily)
+connection_t *connection_create(connection_t *connList, int sock, char *host, char *port, int addressFamily)
 {
     struct addrinfo hints;
     struct addrinfo *servinfo = NULL;
@@ -115,7 +105,7 @@ connection_t *connection_create(connection_t *connList,
 
     // we test the various addresses
     s = -1;
-    for (p = servinfo ; p != NULL && s == -1 ; p = p->ai_next) {
+    for (p = servinfo; p != NULL && s == -1; p = p->ai_next) {
         s = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (s >= 0) {
             sa = p->ai_addr;
@@ -149,9 +139,7 @@ void connection_free(connection_t *connList)
     }
 }
 
-int connection_send(connection_t *connP,
-                    uint8_t *buffer,
-                    size_t length)
+int connection_send(connection_t *connP, uint8_t *buffer, size_t length)
 {
     int nbSent;
     size_t offset;
@@ -179,7 +167,8 @@ int connection_send(connection_t *connP,
 
     offset = 0;
     while (offset != length) {
-        nbSent = sendto(connP->sock, buffer + offset, length - offset, 0, (struct sockaddr *) & (connP->addr), connP->addrLen);
+        nbSent =
+            sendto(connP->sock, buffer + offset, length - offset, 0, (struct sockaddr *)&(connP->addr), connP->addrLen);
         if (nbSent == -1) {
             return -1;
         }
@@ -188,29 +177,24 @@ int connection_send(connection_t *connP,
     return 0;
 }
 
-uint8_t lwm2m_buffer_send(void *sessionH,
-                          uint8_t *buffer,
-                          size_t length,
-                          void *userdata)
+uint8_t lwm2m_buffer_send(void *sessionH, uint8_t *buffer, size_t length, void *userdata)
 {
-    connection_t *connP = (connection_t *) sessionH;
+    connection_t *connP = (connection_t *)sessionH;
 
     if (connP == NULL) {
         fprintf(stderr, "#> failed sending %lu bytes, missing connection\r\n", length);
-        return COAP_500_INTERNAL_SERVER_ERROR ;
+        return COAP_500_INTERNAL_SERVER_ERROR;
     }
 
     if (-1 == connection_send(connP, buffer, length)) {
         fprintf(stderr, "#> failed sending %lu bytes\r\n", length);
-        return COAP_500_INTERNAL_SERVER_ERROR ;
+        return COAP_500_INTERNAL_SERVER_ERROR;
     }
 
     return COAP_NO_ERROR;
 }
 
-bool lwm2m_session_is_equal(void *session1,
-                            void *session2,
-                            void *userData)
+bool lwm2m_session_is_equal(void *session1, void *session2, void *userData)
 {
     return (session1 == session2);
 }

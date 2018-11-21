@@ -41,13 +41,13 @@
  THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef     COAP_BLOCK1_FIRMWARE_ONLY
+#ifndef COAP_BLOCK1_FIRMWARE_ONLY
 
 #include "internals.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 // the maximum payload transferred by block1 we accumulate per server
 #define MAX_BLOCK1_SIZE 4096
@@ -62,7 +62,8 @@ uint8_t coap_block1_handler(lwm2m_block1_data_t **pBlock1Data,
                             uint8_t **outputBuffer,
                             size_t *outputLength)
 {
-    lwm2m_block1_data_t *block1Data = *pBlock1Data;;
+    lwm2m_block1_data_t *block1Data = *pBlock1Data;
+    ;
 
     // manage new block1 transfer
     if (blockNum == 0) {
@@ -140,7 +141,7 @@ void free_block1_buffer(lwm2m_block1_data_t *block1Data)
     if (block1Data != NULL) {
         // free block1 buffer
         lwm2m_free(block1Data->block1buffer);
-        block1Data->block1bufferSize = 0 ;
+        block1Data->block1bufferSize = 0;
 
         // free current element
         lwm2m_free(block1Data);

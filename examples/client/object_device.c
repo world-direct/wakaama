@@ -58,56 +58,56 @@
 #include "liblwm2m.h"
 #include "lwm2mclient.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <time.h>
 
 
-#define PRV_MANUFACTURER      "Open Mobile Alliance"
-#define PRV_MODEL_NUMBER      "Lightweight M2M Client"
-#define PRV_SERIAL_NUMBER     "345000123"
-#define PRV_FIRMWARE_VERSION  "1.0"
-#define PRV_POWER_SOURCE_1    1
-#define PRV_POWER_SOURCE_2    5
-#define PRV_POWER_VOLTAGE_1   3800
-#define PRV_POWER_VOLTAGE_2   5000
-#define PRV_POWER_CURRENT_1   125
-#define PRV_POWER_CURRENT_2   900
-#define PRV_BATTERY_LEVEL     100
-#define PRV_MEMORY_FREE       15
-#define PRV_ERROR_CODE        0
-#define PRV_TIME_ZONE         "Europe/Berlin"
-#define PRV_BINDING_MODE      "U"
+#define PRV_MANUFACTURER "Open Mobile Alliance"
+#define PRV_MODEL_NUMBER "Lightweight M2M Client"
+#define PRV_SERIAL_NUMBER "345000123"
+#define PRV_FIRMWARE_VERSION "1.0"
+#define PRV_POWER_SOURCE_1 1
+#define PRV_POWER_SOURCE_2 5
+#define PRV_POWER_VOLTAGE_1 3800
+#define PRV_POWER_VOLTAGE_2 5000
+#define PRV_POWER_CURRENT_1 125
+#define PRV_POWER_CURRENT_2 900
+#define PRV_BATTERY_LEVEL 100
+#define PRV_MEMORY_FREE 15
+#define PRV_ERROR_CODE 0
+#define PRV_TIME_ZONE "Europe/Berlin"
+#define PRV_BINDING_MODE "U"
 
-#define PRV_OFFSET_MAXLEN   7 //+HH:MM\0 at max
+#define PRV_OFFSET_MAXLEN 7 //+HH:MM\0 at max
 #define PRV_TLV_BUFFER_SIZE 128
 
 // Resource Id's:
-#define RES_O_MANUFACTURER          0
-#define RES_O_MODEL_NUMBER          1
-#define RES_O_SERIAL_NUMBER         2
-#define RES_O_FIRMWARE_VERSION      3
-#define RES_M_REBOOT                4
-#define RES_O_FACTORY_RESET         5
-#define RES_O_AVL_POWER_SOURCES     6
-#define RES_O_POWER_SOURCE_VOLTAGE  7
-#define RES_O_POWER_SOURCE_CURRENT  8
-#define RES_O_BATTERY_LEVEL         9
-#define RES_O_MEMORY_FREE           10
-#define RES_M_ERROR_CODE            11
-#define RES_O_RESET_ERROR_CODE      12
-#define RES_O_CURRENT_TIME          13
-#define RES_O_UTC_OFFSET            14
-#define RES_O_TIMEZONE              15
-#define RES_M_BINDING_MODES         16
+#define RES_O_MANUFACTURER 0
+#define RES_O_MODEL_NUMBER 1
+#define RES_O_SERIAL_NUMBER 2
+#define RES_O_FIRMWARE_VERSION 3
+#define RES_M_REBOOT 4
+#define RES_O_FACTORY_RESET 5
+#define RES_O_AVL_POWER_SOURCES 6
+#define RES_O_POWER_SOURCE_VOLTAGE 7
+#define RES_O_POWER_SOURCE_CURRENT 8
+#define RES_O_BATTERY_LEVEL 9
+#define RES_O_MEMORY_FREE 10
+#define RES_M_ERROR_CODE 11
+#define RES_O_RESET_ERROR_CODE 12
+#define RES_O_CURRENT_TIME 13
+#define RES_O_UTC_OFFSET 14
+#define RES_O_TIMEZONE 15
+#define RES_M_BINDING_MODES 16
 // since TS 20141126-C:
-#define RES_O_DEVICE_TYPE           17
-#define RES_O_HARDWARE_VERSION      18
-#define RES_O_SOFTWARE_VERSION      19
-#define RES_O_BATTERY_STATUS        20
-#define RES_O_MEMORY_TOTAL          21
+#define RES_O_DEVICE_TYPE 17
+#define RES_O_HARDWARE_VERSION 18
+#define RES_O_SOFTWARE_VERSION 19
+#define RES_O_BATTERY_STATUS 20
+#define RES_O_MEMORY_TOTAL 21
 
 
 typedef struct {
@@ -121,8 +121,7 @@ typedef struct {
 
 // basic check that the time offset value is at ISO 8601 format
 // bug: +12:30 is considered a valid value by this function
-static int prv_check_time_offset(char *buffer,
-                                 int length)
+static int prv_check_time_offset(char *buffer, int length)
 {
     int min_index;
 
@@ -172,8 +171,7 @@ static int prv_check_time_offset(char *buffer,
     return 1;
 }
 
-static uint8_t prv_set_value(lwm2m_data_t *dataP,
-                             device_data_t *devDataP)
+static uint8_t prv_set_value(lwm2m_data_t *dataP, device_data_t *devDataP)
 {
     // a simple switch structure is used to respond at the specified resource asked
     switch (dataP->id) {
@@ -288,10 +286,7 @@ static uint8_t prv_set_value(lwm2m_data_t *dataP,
     }
 }
 
-static uint8_t prv_device_read(uint16_t instanceId,
-                               int *numDataP,
-                               lwm2m_data_t **dataArrayP,
-                               lwm2m_object_t *objectP)
+static uint8_t prv_device_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     uint8_t result;
     int i;
@@ -303,25 +298,23 @@ static uint8_t prv_device_read(uint16_t instanceId,
 
     // is the server asking for the full object ?
     if (*numDataP == 0) {
-        uint16_t resList[] = {
-            RES_O_MANUFACTURER,
-            RES_O_MODEL_NUMBER,
-            RES_O_SERIAL_NUMBER,
-            RES_O_FIRMWARE_VERSION,
-            //E: RES_M_REBOOT,
-            //E: RES_O_FACTORY_RESET,
-            RES_O_AVL_POWER_SOURCES,
-            RES_O_POWER_SOURCE_VOLTAGE,
-            RES_O_POWER_SOURCE_CURRENT,
-            RES_O_BATTERY_LEVEL,
-            RES_O_MEMORY_FREE,
-            RES_M_ERROR_CODE,
-            //E: RES_O_RESET_ERROR_CODE,
-            RES_O_CURRENT_TIME,
-            RES_O_UTC_OFFSET,
-            RES_O_TIMEZONE,
-            RES_M_BINDING_MODES
-        };
+        uint16_t resList[] = {RES_O_MANUFACTURER,
+                              RES_O_MODEL_NUMBER,
+                              RES_O_SERIAL_NUMBER,
+                              RES_O_FIRMWARE_VERSION,
+                              // E: RES_M_REBOOT,
+                              // E: RES_O_FACTORY_RESET,
+                              RES_O_AVL_POWER_SOURCES,
+                              RES_O_POWER_SOURCE_VOLTAGE,
+                              RES_O_POWER_SOURCE_CURRENT,
+                              RES_O_BATTERY_LEVEL,
+                              RES_O_MEMORY_FREE,
+                              RES_M_ERROR_CODE,
+                              // E: RES_O_RESET_ERROR_CODE,
+                              RES_O_CURRENT_TIME,
+                              RES_O_UTC_OFFSET,
+                              RES_O_TIMEZONE,
+                              RES_M_BINDING_MODES};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -329,7 +322,7 @@ static uint8_t prv_device_read(uint16_t instanceId,
             return COAP_500_INTERNAL_SERVER_ERROR;
         }
         *numDataP = nbRes;
-        for (i = 0 ; i < nbRes ; i++) {
+        for (i = 0; i < nbRes; i++) {
             (*dataArrayP)[i].id = resList[i];
         }
     }
@@ -343,10 +336,8 @@ static uint8_t prv_device_read(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_device_discover(uint16_t instanceId,
-                                   int *numDataP,
-                                   lwm2m_data_t **dataArrayP,
-                                   lwm2m_object_t *objectP)
+static uint8_t
+prv_device_discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     uint8_t result;
     int i;
@@ -360,25 +351,23 @@ static uint8_t prv_device_discover(uint16_t instanceId,
 
     // is the server asking for the full object ?
     if (*numDataP == 0) {
-        uint16_t resList[] = {
-            RES_O_MANUFACTURER,
-            RES_O_MODEL_NUMBER,
-            RES_O_SERIAL_NUMBER,
-            RES_O_FIRMWARE_VERSION,
-            RES_M_REBOOT,
-            RES_O_FACTORY_RESET,
-            RES_O_AVL_POWER_SOURCES,
-            RES_O_POWER_SOURCE_VOLTAGE,
-            RES_O_POWER_SOURCE_CURRENT,
-            RES_O_BATTERY_LEVEL,
-            RES_O_MEMORY_FREE,
-            RES_M_ERROR_CODE,
-            RES_O_RESET_ERROR_CODE,
-            RES_O_CURRENT_TIME,
-            RES_O_UTC_OFFSET,
-            RES_O_TIMEZONE,
-            RES_M_BINDING_MODES
-        };
+        uint16_t resList[] = {RES_O_MANUFACTURER,
+                              RES_O_MODEL_NUMBER,
+                              RES_O_SERIAL_NUMBER,
+                              RES_O_FIRMWARE_VERSION,
+                              RES_M_REBOOT,
+                              RES_O_FACTORY_RESET,
+                              RES_O_AVL_POWER_SOURCES,
+                              RES_O_POWER_SOURCE_VOLTAGE,
+                              RES_O_POWER_SOURCE_CURRENT,
+                              RES_O_BATTERY_LEVEL,
+                              RES_O_MEMORY_FREE,
+                              RES_M_ERROR_CODE,
+                              RES_O_RESET_ERROR_CODE,
+                              RES_O_CURRENT_TIME,
+                              RES_O_UTC_OFFSET,
+                              RES_O_TIMEZONE,
+                              RES_M_BINDING_MODES};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -419,10 +408,7 @@ static uint8_t prv_device_discover(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_device_write(uint16_t instanceId,
-                                int numData,
-                                lwm2m_data_t *dataArray,
-                                lwm2m_object_t *objectP)
+static uint8_t prv_device_write(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     int i;
     uint8_t result;
@@ -446,8 +432,11 @@ static uint8_t prv_device_write(uint16_t instanceId,
                 break;
 
             case RES_O_UTC_OFFSET:
-                if (1 == prv_check_time_offset((char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length)) {
-                    strncpy(((device_data_t *)(objectP->userData))->time_offset, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
+                if (1 == prv_check_time_offset((char *)dataArray[i].value.asBuffer.buffer,
+                                               dataArray[i].value.asBuffer.length)) {
+                    strncpy(((device_data_t *)(objectP->userData))->time_offset,
+                            (char *)dataArray[i].value.asBuffer.buffer,
+                            dataArray[i].value.asBuffer.length);
                     ((device_data_t *)(objectP->userData))->time_offset[dataArray[i].value.asBuffer.length] = 0;
                     result = COAP_204_CHANGED;
                 } else {
@@ -456,7 +445,7 @@ static uint8_t prv_device_write(uint16_t instanceId,
                 break;
 
             case RES_O_TIMEZONE:
-                //ToDo IANA TZ Format
+                // ToDo IANA TZ Format
                 result = COAP_501_NOT_IMPLEMENTED;
                 break;
 
@@ -470,11 +459,8 @@ static uint8_t prv_device_write(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_device_execute(uint16_t instanceId,
-                                  uint16_t resourceId,
-                                  uint8_t *buffer,
-                                  int length,
-                                  lwm2m_object_t *objectP)
+static uint8_t
+prv_device_execute(uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
     // this is a single instance object
     if (instanceId != 0) {
@@ -508,8 +494,7 @@ void display_device_object(lwm2m_object_t *object)
     device_data_t *data = (device_data_t *)object->userData;
     fprintf(stdout, "  /%u: Device object:\r\n", object->objID);
     if (NULL != data) {
-        fprintf(stdout, "    time: %lld, time_offset: %s\r\n",
-                (long long) data->time, data->time_offset);
+        fprintf(stdout, "    time: %lld, time_offset: %s\r\n", (long long)data->time, data->time_offset);
     }
 #endif
 }
@@ -546,13 +531,14 @@ lwm2m_object_t *get_object_device()
 
         /*
          * And the private function that will access the object.
-         * Those function will be called when a read/write/execute query is made by the server. In fact the library don't need to
+         * Those function will be called when a read/write/execute query is made by the server. In fact the library
+         * don't need to
          * know the resources of the object, only the server does.
          */
-        deviceObj->readFunc     = prv_device_read;
+        deviceObj->readFunc = prv_device_read;
         deviceObj->discoverFunc = prv_device_discover;
-        deviceObj->writeFunc    = prv_device_write;
-        deviceObj->executeFunc  = prv_device_execute;
+        deviceObj->writeFunc = prv_device_write;
+        deviceObj->executeFunc = prv_device_execute;
         deviceObj->userData = lwm2m_malloc(sizeof(device_data_t));
 
         /*
@@ -560,9 +546,9 @@ lwm2m_object_t *get_object_device()
          */
         if (NULL != deviceObj->userData) {
             ((device_data_t *)deviceObj->userData)->battery_level = PRV_BATTERY_LEVEL;
-            ((device_data_t *)deviceObj->userData)->free_memory   = PRV_MEMORY_FREE;
+            ((device_data_t *)deviceObj->userData)->free_memory = PRV_MEMORY_FREE;
             ((device_data_t *)deviceObj->userData)->error = PRV_ERROR_CODE;
-            ((device_data_t *)deviceObj->userData)->time  = 1367491215;
+            ((device_data_t *)deviceObj->userData)->time = 1367491215;
             strcpy(((device_data_t *)deviceObj->userData)->time_offset, "+01:00");
         } else {
             lwm2m_free(deviceObj->instanceList);
@@ -588,8 +574,7 @@ void free_object_device(lwm2m_object_t *objectP)
     lwm2m_free(objectP);
 }
 
-uint8_t device_change(lwm2m_data_t *dataArray,
-                      lwm2m_object_t *objectP)
+uint8_t device_change(lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     uint8_t result;
 
@@ -606,8 +591,7 @@ uint8_t device_change(lwm2m_data_t *dataArray,
             } else {
                 result = COAP_400_BAD_REQUEST;
             }
-        }
-        break;
+        } break;
         case RES_M_ERROR_CODE:
             if (1 == lwm2m_data_decode_int(dataArray, &((device_data_t *)(objectP->userData))->error)) {
                 result = COAP_204_CHANGED;

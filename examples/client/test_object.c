@@ -70,10 +70,10 @@
 #include "liblwm2m.h"
 #include "lwm2mclient.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #define PRV_TLV_BUFFER_SIZE 64
 
@@ -87,14 +87,13 @@ typedef struct _prv_instance_ {
      * The first two are mandatories and represent the pointer to the next instance and the ID of this one. The rest
      * is the instance scope user data (uint8_t test in this case)
      */
-    struct _prv_instance_ *next;    // matches lwm2m_list_t::next
-    uint16_t shortID;               // matches lwm2m_list_t::id
-    uint8_t  test;
-    double   dec;
+    struct _prv_instance_ *next; // matches lwm2m_list_t::next
+    uint16_t shortID;            // matches lwm2m_list_t::id
+    uint8_t test;
+    double dec;
 } prv_instance_t;
 
-static void prv_output_buffer(uint8_t *buffer,
-                              int length)
+static void prv_output_buffer(uint8_t *buffer, int length)
 {
     int i;
     uint8_t array[16];
@@ -106,7 +105,7 @@ static void prv_output_buffer(uint8_t *buffer,
 
         memcpy(array, buffer + i, 16);
 
-        for (j = 0 ; j < 16 && i + j < length; j++) {
+        for (j = 0; j < 16 && i + j < length; j++) {
             fprintf(stderr, "%02X ", array[j]);
         }
         while (j < 16) {
@@ -114,7 +113,7 @@ static void prv_output_buffer(uint8_t *buffer,
             j++;
         }
         fprintf(stderr, "  ");
-        for (j = 0 ; j < 16 && i + j < length; j++) {
+        for (j = 0; j < 16 && i + j < length; j++) {
             if (isprint(array[j])) {
                 fprintf(stderr, "%c ", array[j]);
             } else {
@@ -127,10 +126,7 @@ static void prv_output_buffer(uint8_t *buffer,
     }
 }
 
-static uint8_t prv_read(uint16_t instanceId,
-                        int *numDataP,
-                        lwm2m_data_t **dataArrayP,
-                        lwm2m_object_t *objectP)
+static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     prv_instance_t *targetP;
     int i;
@@ -150,7 +146,7 @@ static uint8_t prv_read(uint16_t instanceId,
         (*dataArrayP)[1].id = 3;
     }
 
-    for (i = 0 ; i < *numDataP ; i++) {
+    for (i = 0; i < *numDataP; i++) {
         switch ((*dataArrayP)[i].id) {
             case 1:
                 lwm2m_data_encode_int(targetP->test, *dataArrayP + i);
@@ -168,10 +164,7 @@ static uint8_t prv_read(uint16_t instanceId,
     return COAP_205_CONTENT;
 }
 
-static uint8_t prv_discover(uint16_t instanceId,
-                            int *numDataP,
-                            lwm2m_data_t **dataArrayP,
-                            lwm2m_object_t *objectP)
+static uint8_t prv_discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     int i;
 
@@ -201,10 +194,7 @@ static uint8_t prv_discover(uint16_t instanceId,
     return COAP_205_CONTENT;
 }
 
-static uint8_t prv_write(uint16_t instanceId,
-                         int numData,
-                         lwm2m_data_t *dataArray,
-                         lwm2m_object_t *objectP)
+static uint8_t prv_write(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     prv_instance_t *targetP;
     int i;
@@ -214,7 +204,7 @@ static uint8_t prv_write(uint16_t instanceId,
         return COAP_404_NOT_FOUND;
     }
 
-    for (i = 0 ; i < numData ; i++) {
+    for (i = 0; i < numData; i++) {
         switch (dataArray[i].id) {
             case 1: {
                 int64_t value;
@@ -223,8 +213,7 @@ static uint8_t prv_write(uint16_t instanceId,
                     return COAP_400_BAD_REQUEST;
                 }
                 targetP->test = (uint8_t)value;
-            }
-            break;
+            } break;
             case 2:
                 return COAP_405_METHOD_NOT_ALLOWED;
             case 3:
@@ -240,8 +229,7 @@ static uint8_t prv_write(uint16_t instanceId,
     return COAP_204_CHANGED;
 }
 
-static uint8_t prv_delete(uint16_t id,
-                          lwm2m_object_t *objectP)
+static uint8_t prv_delete(uint16_t id, lwm2m_object_t *objectP)
 {
     prv_instance_t *targetP;
 
@@ -255,10 +243,7 @@ static uint8_t prv_delete(uint16_t id,
     return COAP_202_DELETED;
 }
 
-static uint8_t prv_create(uint16_t instanceId,
-                          int numData,
-                          lwm2m_data_t *dataArray,
-                          lwm2m_object_t *objectP)
+static uint8_t prv_create(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     prv_instance_t *targetP;
     uint8_t result;
@@ -284,11 +269,7 @@ static uint8_t prv_create(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_exec(uint16_t instanceId,
-                        uint16_t resourceId,
-                        uint8_t *buffer,
-                        int length,
-                        lwm2m_object_t *objectP)
+static uint8_t prv_exec(uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
 
     if (NULL == lwm2m_list_find(objectP->instanceList, instanceId)) {
@@ -299,10 +280,14 @@ static uint8_t prv_exec(uint16_t instanceId,
         case 1:
             return COAP_405_METHOD_NOT_ALLOWED;
         case 2:
-            fprintf(stdout, "\r\n-----------------\r\n"
+            fprintf(stdout,
+                    "\r\n-----------------\r\n"
                     "Execute on %hu/%d/%d\r\n"
                     " Parameter (%d bytes):\r\n",
-                    objectP->objID, instanceId, resourceId, length);
+                    objectP->objID,
+                    instanceId,
+                    resourceId,
+                    length);
             prv_output_buffer((uint8_t *)buffer, length);
             fprintf(stdout, "-----------------\r\n\r\n");
             return COAP_204_CHANGED;
@@ -319,9 +304,12 @@ void display_test_object(lwm2m_object_t *object)
     fprintf(stdout, "  /%u: Test object, instances:\r\n", object->objID);
     prv_instance_t *instance = (prv_instance_t *)object->instanceList;
     while (instance != NULL) {
-        fprintf(stdout, "    /%u/%u: shortId: %u, test: %u\r\n",
-                object->objID, instance->shortID,
-                instance->shortID, instance->test);
+        fprintf(stdout,
+                "    /%u/%u: shortId: %u, test: %u\r\n",
+                object->objID,
+                instance->shortID,
+                instance->shortID,
+                instance->test);
         instance = (prv_instance_t *)instance->next;
     }
 #endif
@@ -340,15 +328,15 @@ lwm2m_object_t *get_test_object(void)
         memset(testObj, 0, sizeof(lwm2m_object_t));
 
         testObj->objID = TEST_OBJECT_ID;
-        for (i = 0 ; i < 3 ; i++) {
+        for (i = 0; i < 3; i++) {
             targetP = (prv_instance_t *)lwm2m_malloc(sizeof(prv_instance_t));
             if (NULL == targetP) {
                 return NULL;
             }
             memset(targetP, 0, sizeof(prv_instance_t));
             targetP->shortID = 10 + i;
-            targetP->test    = 20 + i;
-            targetP->dec     = -30 + i + (double)i / 100.0;
+            targetP->test = 20 + i;
+            targetP->dec = -30 + i + (double)i / 100.0;
             testObj->instanceList = LWM2M_LIST_ADD(testObj->instanceList, targetP);
         }
         /*
@@ -378,4 +366,3 @@ void free_test_object(lwm2m_object_t *object)
     }
     lwm2m_free(object);
 }
-

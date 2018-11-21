@@ -19,36 +19,36 @@
 #ifndef DTLS_CONNECTION_H_
 #define DTLS_CONNECTION_H_
 
-#include <stdio.h>
-#include <unistd.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <unistd.h>
 
-#include "tinydtls/tinydtls.h"
-#include "tinydtls/dtls.h"
 #include "liblwm2m.h"
+#include "tinydtls/dtls.h"
+#include "tinydtls/tinydtls.h"
 
 #define LWM2M_STANDARD_PORT_STR "5683"
-#define LWM2M_STANDARD_PORT      5683
-#define LWM2M_DTLS_PORT_STR     "5684"
-#define LWM2M_DTLS_PORT          5684
+#define LWM2M_STANDARD_PORT 5683
+#define LWM2M_DTLS_PORT_STR "5684"
+#define LWM2M_DTLS_PORT 5684
 #define LWM2M_BSSERVER_PORT_STR "5685"
-#define LWM2M_BSSERVER_PORT      5685
+#define LWM2M_BSSERVER_PORT 5685
 
 // after 40sec of inactivity we rehandshake
 #define DTLS_NAT_TIMEOUT 40
 
 typedef struct _dtls_connection_t {
-    struct _dtls_connection_t   *next;
-    int                     sock;
-    struct sockaddr_in6     addr;
-    size_t                  addrLen;
-    session_t       *dtlsSession;
+    struct _dtls_connection_t *next;
+    int sock;
+    struct sockaddr_in6 addr;
+    size_t addrLen;
+    session_t *dtlsSession;
     lwm2m_object_t *securityObj;
     int securityInstId;
     lwm2m_context_t *lwm2mH;
@@ -59,8 +59,14 @@ typedef struct _dtls_connection_t {
 int create_socket(const char *portStr, int ai_family);
 
 dtls_connection_t *connection_find(dtls_connection_t *connList, const struct sockaddr_storage *addr, size_t addrLen);
-dtls_connection_t *connection_new_incoming(dtls_connection_t *connList, int sock, const struct sockaddr *addr, size_t addrLen);
-dtls_connection_t *connection_create(dtls_connection_t *connList, int sock, lwm2m_object_t *securityObj, int instanceId, lwm2m_context_t *lwm2mH, int addressFamily);
+dtls_connection_t *
+connection_new_incoming(dtls_connection_t *connList, int sock, const struct sockaddr *addr, size_t addrLen);
+dtls_connection_t *connection_create(dtls_connection_t *connList,
+                                     int sock,
+                                     lwm2m_object_t *securityObj,
+                                     int instanceId,
+                                     lwm2m_context_t *lwm2mH,
+                                     int addressFamily);
 
 void connection_free(dtls_connection_t *connList);
 

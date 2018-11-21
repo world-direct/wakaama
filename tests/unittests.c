@@ -16,22 +16,20 @@
  *******************************************************************************/
 
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "CUnit/Basic.h"
 
 #include "tests.h"
 
 // stub function
-void *lwm2m_connect_server(uint16_t secObjInstID,
-                           void *userData)
+void *lwm2m_connect_server(uint16_t secObjInstID, void *userData)
 {
     return (void *)secObjInstID;
 }
 
-void lwm2m_close_connection(void *sessionH,
-                            void *userData)
+void lwm2m_close_connection(void *sessionH, void *userData)
 {
     return;
 }

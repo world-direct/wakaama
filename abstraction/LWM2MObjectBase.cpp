@@ -1,6 +1,6 @@
 #include "LWM2MObjectBase.h"
 
-LWM2MObjectBase::LWM2MObjectBase(lwm2m_context_t *context, uint16_t objID): _lwm2mObject()
+LWM2MObjectBase::LWM2MObjectBase(lwm2m_context_t *context, uint16_t objID) : _lwm2mObject()
 {
 
     this->_context = context;
@@ -14,7 +14,6 @@ LWM2MObjectBase::LWM2MObjectBase(lwm2m_context_t *context, uint16_t objID): _lwm
     this->_lwm2mObject.deleteFunc = &LWM2M_Delete;
 
     this->_lwm2mObject.userData = this;
-
 }
 
 lwm2m_object_t *LWM2MObjectBase::GetLWM2MObject()
@@ -22,44 +21,44 @@ lwm2m_object_t *LWM2MObjectBase::GetLWM2MObject()
     return &(this->_lwm2mObject);
 }
 
-uint8_t LWM2MObjectBase::LWM2M_Read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
+uint8_t
+LWM2MObjectBase::LWM2M_Read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Read(instanceId, numDataP, dataArrayP, objectP);
-
 }
 
-uint8_t LWM2MObjectBase::LWM2M_Write(uint16_t instanceId, int numData, lwm2m_data_t *dataArrayP, lwm2m_object_t *objectP)
+uint8_t
+LWM2MObjectBase::LWM2M_Write(uint16_t instanceId, int numData, lwm2m_data_t *dataArrayP, lwm2m_object_t *objectP)
 {
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Write(instanceId, numData, dataArrayP, objectP);
-
 }
 
-uint8_t LWM2MObjectBase::LWM2M_Execute(uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
+uint8_t LWM2MObjectBase::LWM2M_Execute(
+    uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Execute(instanceId, resourceId, buffer, length, objectP);
-
 }
 
-uint8_t LWM2MObjectBase::LWM2M_Discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
+uint8_t
+LWM2MObjectBase::LWM2M_Discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Discover(instanceId, numDataP, dataArrayP, objectP);
-
 }
 
-uint8_t LWM2MObjectBase::LWM2M_Create(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
+uint8_t
+LWM2MObjectBase::LWM2M_Create(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Create(instanceId, numData, dataArray, objectP);
-
 }
 
 uint8_t LWM2MObjectBase::LWM2M_Delete(uint16_t instanceId, lwm2m_object_t *objectP)
@@ -67,7 +66,6 @@ uint8_t LWM2MObjectBase::LWM2M_Delete(uint16_t instanceId, lwm2m_object_t *objec
 
     LWM2MObjectBase *_this = (LWM2MObjectBase *)objectP->userData;
     return _this->Delete(instanceId, objectP);
-
 }
 
 lwm2m_context_t *LWM2MObjectBase::GetLWM2MContext()
@@ -75,7 +73,8 @@ lwm2m_context_t *LWM2MObjectBase::GetLWM2MContext()
     return this->_context;
 }
 
-uint8_t LWM2MObjectBase::HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
+uint8_t
+LWM2MObjectBase::HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     return COAP_405_METHOD_NOT_ALLOWED;
 }
@@ -120,7 +119,6 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t *uri, const char *value,
     lwm2m_resource_value_changed(this->_context, uri);
 
     return result;
-
 }
 
 uint16_t LWM2MObjectBase::GetCurrentInstancesCount()
@@ -134,5 +132,4 @@ uint16_t LWM2MObjectBase::GetCurrentInstancesCount()
         // TODO: add safety-limit
     }
     return count;
-
 }

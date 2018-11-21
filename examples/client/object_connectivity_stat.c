@@ -32,29 +32,29 @@
 
 #include "liblwm2m.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 // Resource Id's:
-#define RES_O_SMS_TX_COUNTER            0
-#define RES_O_SMS_RX_COUNTER            1
-#define RES_O_TX_DATA                   2
-#define RES_O_RX_DATA                   3
-#define RES_O_MAX_MESSAGE_SIZE          4
-#define RES_O_AVERAGE_MESSAGE_SIZE      5
-#define RES_M_START_OR_RESET            6
+#define RES_O_SMS_TX_COUNTER 0
+#define RES_O_SMS_RX_COUNTER 1
+#define RES_O_TX_DATA 2
+#define RES_O_RX_DATA 3
+#define RES_O_MAX_MESSAGE_SIZE 4
+#define RES_O_AVERAGE_MESSAGE_SIZE 5
+#define RES_M_START_OR_RESET 6
 
 typedef struct {
-    int64_t   smsTxCounter;
-    int64_t   smsRxCounter;
-    int64_t   txDataByte;             // report in kByte!
-    int64_t   rxDataByte;             // report in kByte!
-    int64_t   maxMessageSize;
-    int64_t   avrMessageSize;
-    int64_t   messageCount;           // private for incremental average calc.
-    bool      collectDataStarted;
+    int64_t smsTxCounter;
+    int64_t smsRxCounter;
+    int64_t txDataByte; // report in kByte!
+    int64_t rxDataByte; // report in kByte!
+    int64_t maxMessageSize;
+    int64_t avrMessageSize;
+    int64_t messageCount; // private for incremental average calc.
+    bool collectDataStarted;
 } conn_s_data_t;
 
 static uint8_t prv_set_tlv(lwm2m_data_t *dataP, conn_s_data_t *connStDataP)
@@ -85,7 +85,7 @@ static uint8_t prv_set_tlv(lwm2m_data_t *dataP, conn_s_data_t *connStDataP)
             return COAP_205_CONTENT;
             break;
         default:
-            return COAP_404_NOT_FOUND ;
+            return COAP_404_NOT_FOUND;
     }
 }
 
@@ -96,24 +96,22 @@ static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataA
 
     // this is a single instance object
     if (instanceId != 0) {
-        return COAP_404_NOT_FOUND ;
+        return COAP_404_NOT_FOUND;
     }
 
     // is the server asking for the full object ?
     if (*numDataP == 0) {
-        uint16_t resList[] = {
-            RES_O_SMS_TX_COUNTER,
-            RES_O_SMS_RX_COUNTER,
-            RES_O_TX_DATA,
-            RES_O_RX_DATA,
-            RES_O_MAX_MESSAGE_SIZE,
-            RES_O_AVERAGE_MESSAGE_SIZE
-        };
+        uint16_t resList[] = {RES_O_SMS_TX_COUNTER,
+                              RES_O_SMS_RX_COUNTER,
+                              RES_O_TX_DATA,
+                              RES_O_RX_DATA,
+                              RES_O_MAX_MESSAGE_SIZE,
+                              RES_O_AVERAGE_MESSAGE_SIZE};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
         if (*dataArrayP == NULL) {
-            return COAP_500_INTERNAL_SERVER_ERROR ;
+            return COAP_500_INTERNAL_SERVER_ERROR;
         }
         *numDataP = nbRes;
         for (i = 0; i < nbRes; i++) {
@@ -132,19 +130,18 @@ static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataA
 
 static void prv_resetCounter(lwm2m_object_t *objectP, bool start)
 {
-    conn_s_data_t *myData = (conn_s_data_t *) objectP->userData;
-    myData->smsTxCounter        = 0;
-    myData->smsRxCounter        = 0;
-    myData->txDataByte          = 0;
-    myData->rxDataByte          = 0;
-    myData->maxMessageSize      = 0;
-    myData->avrMessageSize      = 0;
-    myData->messageCount        = 0;
-    myData->collectDataStarted  = start;
+    conn_s_data_t *myData = (conn_s_data_t *)objectP->userData;
+    myData->smsTxCounter = 0;
+    myData->smsRxCounter = 0;
+    myData->txDataByte = 0;
+    myData->rxDataByte = 0;
+    myData->maxMessageSize = 0;
+    myData->avrMessageSize = 0;
+    myData->messageCount = 0;
+    myData->collectDataStarted = start;
 }
 
-static uint8_t prv_exec(uint16_t instanceId, uint16_t resourceId,
-                        uint8_t *buffer, int length, lwm2m_object_t *objectP)
+static uint8_t prv_exec(uint16_t instanceId, uint16_t resourceId, uint8_t *buffer, int length, lwm2m_object_t *objectP)
 {
     // this is a single instance object
     if (instanceId != 0) {
@@ -170,8 +167,7 @@ void conn_s_updateTxStatistic(lwm2m_object_t *objectP, uint16_t txDataByte, bool
     if (myData->collectDataStarted) {
         myData->txDataByte += txDataByte;
         myData->messageCount++;
-        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) /
-                                 myData->messageCount;
+        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) / myData->messageCount;
         if (txDataByte > myData->maxMessageSize) {
             myData->maxMessageSize = txDataByte;
         }
@@ -187,8 +183,7 @@ void conn_s_updateRxStatistic(lwm2m_object_t *objectP, uint16_t rxDataByte, bool
     if (myData->collectDataStarted) {
         myData->rxDataByte += rxDataByte;
         myData->messageCount++;
-        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) /
-                                 myData->messageCount;
+        myData->avrMessageSize = (myData->txDataByte + myData->rxDataByte) / myData->messageCount;
         if (rxDataByte > myData->maxMessageSize) {
             myData->maxMessageSize = rxDataByte;
         }
@@ -208,7 +203,7 @@ lwm2m_object_t *get_object_conn_s(void)
      */
     lwm2m_object_t *connObj;
 
-    connObj = (lwm2m_object_t *) lwm2m_malloc(sizeof(lwm2m_object_t));
+    connObj = (lwm2m_object_t *)lwm2m_malloc(sizeof(lwm2m_object_t));
 
     if (NULL != connObj) {
         memset(connObj, 0, sizeof(lwm2m_object_t));
@@ -232,9 +227,9 @@ lwm2m_object_t *get_object_conn_s(void)
          * query is made by the server or core. In fact the library don't need
          * to know the resources of the object, only the server does.
          */
-        connObj->readFunc     = prv_read;
-        connObj->executeFunc  = prv_exec;
-        connObj->userData     = lwm2m_malloc(sizeof(conn_s_data_t));
+        connObj->readFunc = prv_read;
+        connObj->executeFunc = prv_exec;
+        connObj->userData = lwm2m_malloc(sizeof(conn_s_data_t));
 
         /*
          * Also some user data can be stored in the object with a private

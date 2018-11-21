@@ -16,25 +16,21 @@
  *
  *******************************************************************************/
 
-#include "liblwm2m.h"
 #include "internals.h"
+#include "liblwm2m.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <ctype.h> // isspace
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "commandline.h"
 
-#include "tests.h"
 #include "CUnit/Basic.h"
+#include "tests.h"
 
-static void test_data(const char *uriStr,
-                      lwm2m_media_type_t format,
-                      lwm2m_data_t *tlvP,
-                      int size,
-                      const char *id)
+static void test_data(const char *uriStr, lwm2m_media_type_t format, lwm2m_data_t *tlvP, int size, const char *id)
 {
     lwm2m_uri_t uri;
     uint8_t *buffer;
@@ -48,7 +44,7 @@ static void test_data(const char *uriStr,
         length = lwm2m_data_serialize((uriStr != NULL) ? &uri : NULL, size, tlvP, &format, &buffer);
         if (length <= 0) {
             printf("(Serialize lwm2m_data_t %s to %s failed.)\t", id, format == LWM2M_CONTENT_JSON ? "JSON" : "TLV");
-            //dump_data_t(stdout, size, tlvP, 0);
+            // dump_data_t(stdout, size, tlvP, 0);
             CU_TEST_FATAL(CU_FALSE);
         } else {
             lwm2m_free(buffer);
@@ -75,7 +71,7 @@ static void test_data_and_compare(const char *uriStr,
     length = lwm2m_data_serialize((uriStr != NULL) ? &uri : NULL, size, tlvP, &format, &buffer);
     if (length <= 0) {
         printf("(Serialize lwm2m_data_t %s to TLV failed.)\t", id);
-        //dump_data_t(stdout, size, tlvP, 0);
+        // dump_data_t(stdout, size, tlvP, 0);
         CU_TEST_FATAL(CU_FALSE);
         return;
     }
@@ -83,8 +79,7 @@ static void test_data_and_compare(const char *uriStr,
     if (format != LWM2M_CONTENT_JSON) {
         CU_ASSERT_EQUAL(original_length, length);
 
-        if ((original_length != length) ||
-                (memcmp(original_buffer, buffer, length) != 0)) {
+        if ((original_length != length) || (memcmp(original_buffer, buffer, length) != 0)) {
             printf("Comparing buffer after parse/serialize failed for %s:\n", id);
             output_buffer(stdout, buffer, length, 0);
             printf("\ninstead of:\n");
@@ -103,7 +98,7 @@ static void make_all_objects_string_types(lwm2m_data_t *tlvP, int size)
 {
     int i;
 
-    for (i = 0 ; i < size ; ++i) {
+    for (i = 0; i < size; ++i) {
         if (tlvP[i].type == LWM2M_TYPE_OPAQUE) {
             tlvP[i].type = LWM2M_TYPE_STRING;
         } else if (tlvP[i].type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
@@ -124,11 +119,8 @@ static void make_all_objects_string_types(lwm2m_data_t *tlvP, int size)
  * @param format The format of the testBuf. Maybe LWM2M_CONTENT_TLV or LWM2M_CONTENT_JSON at the moment.
  * @param id The test object id for debug out.
  */
-static void test_raw(const char *uriStr,
-                     const uint8_t *testBuf,
-                     size_t testLen,
-                     lwm2m_media_type_t format,
-                     const char *id)
+static void
+test_raw(const char *uriStr, const uint8_t *testBuf, size_t testLen, lwm2m_media_type_t format, const char *id)
 {
     lwm2m_data_t *tlvP;
     lwm2m_uri_t uri;
@@ -194,22 +186,18 @@ static void test_1(void)
     CU_ASSERT_TRUE_FATAL(size > 0);
     // Serialize to the same format and compare to the input buffer
     test_data_and_compare(NULL, format, tlvP, size, "1", (uint8_t *)buffer, testLen);
-
 }
 
 static void test_2(void)
 {
     const uint8_t buffer[] = {
-        0xC8, 0x00, 0x14, 0x4F, 0x70, 0x65, 0x6E, 0x20, 0x4D, 0x6F, 0x62, 0x69, 0x6C, 0x65, 0x20,
-        0x41, 0x6C, 0x6C, 0x69, 0x61, 0x6E, 0x63, 0x65, 0xC8, 0x01, 0x16, 0x4C, 0x69, 0x67, 0x68,
-        0x74, 0x77, 0x65, 0x69, 0x67, 0x68, 0x74, 0x20, 0x4D, 0x32, 0x4D, 0x20, 0x43, 0x6C, 0x69,
-        0x65, 0x6E, 0x74, 0xC8, 0x02, 0x09, 0x33, 0x34, 0x35, 0x30, 0x30, 0x30, 0x31, 0x32, 0x33,
-        0xC3, 0x03, 0x31, 0x2E, 0x30, 0x86, 0x06, 0x41, 0x00, 0x01, 0x41, 0x01, 0x05, 0x88, 0x07,
-        0x08, 0x42, 0x00, 0x0E, 0xD8, 0x42, 0x01, 0x13, 0x88, 0x87, 0x08, 0x41, 0x00, 0x7D, 0x42,
-        0x01, 0x03, 0x84, 0xC1, 0x09, 0x64, 0xC1, 0x0A, 0x0F, 0x83, 0x0B, 0x41, 0x00, 0x00, 0xC4,
-        0x0D, 0x51, 0x82, 0x42, 0x8F, 0xC6, 0x0E, 0x2B, 0x30, 0x32, 0x3A, 0x30, 0x30, 0xC1, 0x0F,
-        0x55
-    };
+        0xC8, 0x00, 0x14, 0x4F, 0x70, 0x65, 0x6E, 0x20, 0x4D, 0x6F, 0x62, 0x69, 0x6C, 0x65, 0x20, 0x41, 0x6C, 0x6C,
+        0x69, 0x61, 0x6E, 0x63, 0x65, 0xC8, 0x01, 0x16, 0x4C, 0x69, 0x67, 0x68, 0x74, 0x77, 0x65, 0x69, 0x67, 0x68,
+        0x74, 0x20, 0x4D, 0x32, 0x4D, 0x20, 0x43, 0x6C, 0x69, 0x65, 0x6E, 0x74, 0xC8, 0x02, 0x09, 0x33, 0x34, 0x35,
+        0x30, 0x30, 0x30, 0x31, 0x32, 0x33, 0xC3, 0x03, 0x31, 0x2E, 0x30, 0x86, 0x06, 0x41, 0x00, 0x01, 0x41, 0x01,
+        0x05, 0x88, 0x07, 0x08, 0x42, 0x00, 0x0E, 0xD8, 0x42, 0x01, 0x13, 0x88, 0x87, 0x08, 0x41, 0x00, 0x7D, 0x42,
+        0x01, 0x03, 0x84, 0xC1, 0x09, 0x64, 0xC1, 0x0A, 0x0F, 0x83, 0x0B, 0x41, 0x00, 0x00, 0xC4, 0x0D, 0x51, 0x82,
+        0x42, 0x8F, 0xC6, 0x0E, 0x2B, 0x30, 0x32, 0x3A, 0x30, 0x30, 0xC1, 0x0F, 0x55};
     test_raw(NULL, buffer, sizeof(buffer), LWM2M_CONTENT_TLV, "2");
 }
 
@@ -291,7 +279,8 @@ static void test_7(void)
 
     // We do a string comparison. Because parsing+serialization changes double value
     // precision, we expect a slightly different output than input.
-    const char *expect = "{\"bn\":\"/12/0/\",\"e\":[{\"n\":\"1\",\"v\":1234},{\"n\":\"3\",\"v\":56.789},{\"n\":\"2/0\",\"v\":0.23},{\"n\":\"2/1\",\"v\":-52.0005999}]}";
+    const char *expect = "{\"bn\":\"/12/0/\",\"e\":[{\"n\":\"1\",\"v\":1234},{\"n\":\"3\",\"v\":56.789},{\"n\":\"2/"
+                         "0\",\"v\":0.23},{\"n\":\"2/1\",\"v\":-52.0005999}]}";
 
     test_raw_expected(NULL, (uint8_t *)buffer, strlen(buffer), expect, strlen(expect), LWM2M_CONTENT_JSON, "7a");
     test_raw_expected("/12", (uint8_t *)buffer, strlen(buffer), expect, strlen(expect), LWM2M_CONTENT_JSON, "7b");
@@ -368,17 +357,17 @@ static void test_10(void)
 }
 
 static struct TestTable table[] = {
-    { "test of test_1()", test_1 },
-    { "test of test_2()", test_2 },
-    { "test of test_3()", test_3 },
-    { "test of test_4()", test_4 },
-    { "test of test_5()", test_5 },
-    { "test of test_6()", test_6 },
-    { "test of test_7()", test_7 },
-    { "test of test_8()", test_8 },
-    { "test of test_9()", test_9 },
-    { "test of test_10()", test_10 },
-    { NULL, NULL },
+    {"test of test_1()", test_1},
+    {"test of test_2()", test_2},
+    {"test of test_3()", test_3},
+    {"test of test_4()", test_4},
+    {"test of test_5()", test_5},
+    {"test of test_6()", test_6},
+    {"test of test_7()", test_7},
+    {"test of test_8()", test_8},
+    {"test of test_9()", test_9},
+    {"test of test_10()", test_10},
+    {NULL, NULL},
 };
 
 CU_ErrorCode create_tlv_json_suit()
@@ -392,5 +381,3 @@ CU_ErrorCode create_tlv_json_suit()
 
     return add_tests(pSuite, table);
 }
-
-

@@ -18,8 +18,7 @@
 #include "internals.h"
 
 
-lwm2m_list_t *lwm2m_list_add(lwm2m_list_t *head,
-                             lwm2m_list_t *node)
+lwm2m_list_t *lwm2m_list_add(lwm2m_list_t *head, lwm2m_list_t *node)
 {
     lwm2m_list_t *target;
 
@@ -44,8 +43,7 @@ lwm2m_list_t *lwm2m_list_add(lwm2m_list_t *head,
 }
 
 
-lwm2m_list_t *lwm2m_list_find(lwm2m_list_t *head,
-                              uint16_t id)
+lwm2m_list_t *lwm2m_list_find(lwm2m_list_t *head, uint16_t id)
 {
     while (NULL != head && head->id < id) {
         head = head->next;
@@ -59,9 +57,7 @@ lwm2m_list_t *lwm2m_list_find(lwm2m_list_t *head,
 }
 
 
-lwm2m_list_t *lwm2m_list_remove(lwm2m_list_t *head,
-                                uint16_t id,
-                                lwm2m_list_t **nodeP)
+lwm2m_list_t *lwm2m_list_remove(lwm2m_list_t *head, uint16_t id, lwm2m_list_t **nodeP)
 {
     lwm2m_list_t *target;
 

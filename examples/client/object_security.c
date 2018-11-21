@@ -44,34 +44,33 @@
 
 #include "liblwm2m.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 typedef struct _security_instance_ {
-    struct _security_instance_ *next;         // matches lwm2m_list_t::next
-    uint16_t                     instanceId;  // matches lwm2m_list_t::id
-    char                        *uri;
-    bool                         isBootstrap;
-    uint8_t                      securityMode;
-    char                        *publicIdentity;
-    uint16_t                     publicIdLen;
-    char                        *serverPublicKey;
-    uint16_t                     serverPublicKeyLen;
-    char                        *secretKey;
-    uint16_t                     secretKeyLen;
-    uint8_t                      smsSecurityMode;
-    char                        *smsParams; // SMS binding key parameters
-    uint16_t                     smsParamsLen;
-    char                        *smsSecret; // SMS binding secret key
-    uint16_t                     smsSecretLen;
-    uint16_t                     shortID;
-    uint32_t                     clientHoldOffTime;
-    uint32_t                     bootstrapServerAccountTimeout;
+    struct _security_instance_ *next; // matches lwm2m_list_t::next
+    uint16_t instanceId;              // matches lwm2m_list_t::id
+    char *uri;
+    bool isBootstrap;
+    uint8_t securityMode;
+    char *publicIdentity;
+    uint16_t publicIdLen;
+    char *serverPublicKey;
+    uint16_t serverPublicKeyLen;
+    char *secretKey;
+    uint16_t secretKeyLen;
+    uint8_t smsSecurityMode;
+    char *smsParams; // SMS binding key parameters
+    uint16_t smsParamsLen;
+    char *smsSecret; // SMS binding secret key
+    uint16_t smsSecretLen;
+    uint16_t shortID;
+    uint32_t clientHoldOffTime;
+    uint32_t bootstrapServerAccountTimeout;
 } security_instance_t;
 
-static uint8_t prv_get_value(lwm2m_data_t *dataP,
-                             security_instance_t *targetP)
+static uint8_t prv_get_value(lwm2m_data_t *dataP, security_instance_t *targetP)
 {
     switch (dataP->id) {
         case LWM2M_SECURITY_URI_ID:
@@ -131,10 +130,7 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP,
     }
 }
 
-static uint8_t prv_security_read(uint16_t instanceId,
-                                 int *numDataP,
-                                 lwm2m_data_t **dataArrayP,
-                                 lwm2m_object_t *objectP)
+static uint8_t prv_security_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     security_instance_t *targetP;
     uint8_t result;
@@ -159,8 +155,7 @@ static uint8_t prv_security_read(uint16_t instanceId,
                               LWM2M_SECURITY_SMS_SERVER_NUMBER_ID,
                               LWM2M_SECURITY_SHORT_SERVER_ID,
                               LWM2M_SECURITY_HOLD_OFF_ID,
-                              LWM2M_SECURITY_BOOTSTRAP_TIMEOUT_ID
-                             };
+                              LWM2M_SECURITY_BOOTSTRAP_TIMEOUT_ID};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -168,7 +163,7 @@ static uint8_t prv_security_read(uint16_t instanceId,
             return COAP_500_INTERNAL_SERVER_ERROR;
         }
         *numDataP = nbRes;
-        for (i = 0 ; i < nbRes ; i++) {
+        for (i = 0; i < nbRes; i++) {
             (*dataArrayP)[i].id = resList[i];
         }
     }
@@ -184,10 +179,7 @@ static uint8_t prv_security_read(uint16_t instanceId,
 
 #ifdef LWM2M_BOOTSTRAP
 
-static uint8_t prv_security_write(uint16_t instanceId,
-                                  int numData,
-                                  lwm2m_data_t *dataArray,
-                                  lwm2m_object_t *objectP)
+static uint8_t prv_security_write(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     security_instance_t *targetP;
     int i;
@@ -208,7 +200,8 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 targetP->uri = (char *)lwm2m_malloc(dataArray[i].value.asBuffer.length + 1);
                 memset(targetP->uri, 0, dataArray[i].value.asBuffer.length + 1);
                 if (targetP->uri != NULL) {
-                    strncpy(targetP->uri, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
+                    strncpy(
+                        targetP->uri, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
                     result = COAP_204_CHANGED;
                 } else {
                     result = COAP_500_INTERNAL_SERVER_ERROR;
@@ -236,8 +229,7 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            }
-            break;
+            } break;
             case LWM2M_SECURITY_PUBLIC_KEY_ID:
                 if (targetP->publicIdentity != NULL) {
                     lwm2m_free(targetP->publicIdentity);
@@ -245,7 +237,9 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 targetP->publicIdentity = (char *)lwm2m_malloc(dataArray[i].value.asBuffer.length + 1);
                 memset(targetP->publicIdentity, 0, dataArray[i].value.asBuffer.length + 1);
                 if (targetP->publicIdentity != NULL) {
-                    memcpy(targetP->publicIdentity, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
+                    memcpy(targetP->publicIdentity,
+                           (char *)dataArray[i].value.asBuffer.buffer,
+                           dataArray[i].value.asBuffer.length);
                     targetP->publicIdLen = dataArray[i].value.asBuffer.length;
                     result = COAP_204_CHANGED;
                 } else {
@@ -260,7 +254,9 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 targetP->serverPublicKey = (char *)lwm2m_malloc(dataArray[i].value.asBuffer.length + 1);
                 memset(targetP->serverPublicKey, 0, dataArray[i].value.asBuffer.length + 1);
                 if (targetP->serverPublicKey != NULL) {
-                    memcpy(targetP->serverPublicKey, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
+                    memcpy(targetP->serverPublicKey,
+                           (char *)dataArray[i].value.asBuffer.buffer,
+                           dataArray[i].value.asBuffer.length);
                     targetP->serverPublicKeyLen = dataArray[i].value.asBuffer.length;
                     result = COAP_204_CHANGED;
                 } else {
@@ -275,7 +271,9 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 targetP->secretKey = (char *)lwm2m_malloc(dataArray[i].value.asBuffer.length + 1);
                 memset(targetP->secretKey, 0, dataArray[i].value.asBuffer.length + 1);
                 if (targetP->secretKey != NULL) {
-                    memcpy(targetP->secretKey, (char *)dataArray[i].value.asBuffer.buffer, dataArray[i].value.asBuffer.length);
+                    memcpy(targetP->secretKey,
+                           (char *)dataArray[i].value.asBuffer.buffer,
+                           dataArray[i].value.asBuffer.length);
                     targetP->secretKeyLen = dataArray[i].value.asBuffer.length;
                     result = COAP_204_CHANGED;
                 } else {
@@ -316,8 +314,7 @@ static uint8_t prv_security_write(uint16_t instanceId,
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            }
-            break;
+            } break;
 
             case LWM2M_SECURITY_HOLD_OFF_ID: {
                 int64_t value;
@@ -360,8 +357,7 @@ static uint8_t prv_security_write(uint16_t instanceId,
     return result;
 }
 
-static uint8_t prv_security_delete(uint16_t id,
-                                   lwm2m_object_t *objectP)
+static uint8_t prv_security_delete(uint16_t id, lwm2m_object_t *objectP)
 {
     security_instance_t *targetP;
 
@@ -378,10 +374,7 @@ static uint8_t prv_security_delete(uint16_t id,
     return COAP_202_DELETED;
 }
 
-static uint8_t prv_security_create(uint16_t instanceId,
-                                   int numData,
-                                   lwm2m_data_t *dataArray,
-                                   lwm2m_object_t *objectP)
+static uint8_t prv_security_create(uint16_t instanceId, int numData, lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
 {
     security_instance_t *targetP;
     uint8_t result;
@@ -442,10 +435,15 @@ void display_security_object(lwm2m_object_t *object)
     fprintf(stdout, "  /%u: Security object, instances:\r\n", object->objID);
     security_instance_t *instance = (security_instance_t *)object->instanceList;
     while (instance != NULL) {
-        fprintf(stdout, "    /%u/%u: instanceId: %u, uri: %s, isBootstrap: %s, shortId: %u, clientHoldOffTime: %u\r\n",
-                object->objID, instance->instanceId,
-                instance->instanceId, instance->uri, instance->isBootstrap ? "true" : "false",
-                instance->shortID, instance->clientHoldOffTime);
+        fprintf(stdout,
+                "    /%u/%u: instanceId: %u, uri: %s, isBootstrap: %s, shortId: %u, clientHoldOffTime: %u\r\n",
+                object->objID,
+                instance->instanceId,
+                instance->instanceId,
+                instance->uri,
+                instance->isBootstrap ? "true" : "false",
+                instance->shortID,
+                instance->clientHoldOffTime);
         instance = (security_instance_t *)instance->next;
     }
 #endif
@@ -467,12 +465,8 @@ void clean_security_object(lwm2m_object_t *objectP)
     }
 }
 
-lwm2m_object_t *get_security_object(int serverId,
-                                    const char *serverUri,
-                                    char *bsPskId,
-                                    char *psk,
-                                    uint16_t pskLen,
-                                    bool isBootstrap)
+lwm2m_object_t *
+get_security_object(int serverId, const char *serverUri, char *bsPskId, char *psk, uint16_t pskLen, bool isBootstrap)
 {
     lwm2m_object_t *securityObj;
 
@@ -535,8 +529,7 @@ lwm2m_object_t *get_security_object(int serverId,
     return securityObj;
 }
 
-char *get_server_uri(lwm2m_object_t *objectP,
-                     uint16_t secObjInstID)
+char *get_server_uri(lwm2m_object_t *objectP, uint16_t secObjInstID)
 {
     security_instance_t *targetP = (security_instance_t *)LWM2M_LIST_FIND(objectP->instanceList, secObjInstID);
 

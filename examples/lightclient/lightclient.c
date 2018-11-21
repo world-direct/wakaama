@@ -55,23 +55,23 @@
 
 */
 
-#include "liblwm2m.h"
 #include "connection.h"
+#include "liblwm2m.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/select.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/stat.h>
+#include <ctype.h>
 #include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 extern lwm2m_object_t *get_object_device(void);
 extern void free_object_device(lwm2m_object_t *objectP);
@@ -101,8 +101,7 @@ void handle_sigint(int signum)
     g_quit = 1;
 }
 
-void *lwm2m_connect_server(uint16_t secObjInstID,
-                           void *userData)
+void *lwm2m_connect_server(uint16_t secObjInstID, void *userData)
 {
     client_data_t *dataP;
     char *uri;
@@ -157,8 +156,7 @@ exit:
     return (void *)newConnP;
 }
 
-void lwm2m_close_connection(void *sessionH,
-                            void *userData)
+void lwm2m_close_connection(void *sessionH, void *userData)
 {
     client_data_t *app_data;
     connection_t *targetP;
@@ -230,7 +228,7 @@ void print_state(lwm2m_context_t *lwm2mH)
         fprintf(stderr, "No Bootstrap Server.\r\n");
     } else {
         fprintf(stderr, "Bootstrap Servers:\r\n");
-        for (targetP = lwm2mH->bootstrapServerList ; targetP != NULL ; targetP = targetP->next) {
+        for (targetP = lwm2mH->bootstrapServerList; targetP != NULL; targetP = targetP->next) {
             fprintf(stderr, " - Security Object ID %d", targetP->secObjInstID);
             fprintf(stderr, "\tHold Off Time: %lu s", (unsigned long)targetP->lifetime);
             fprintf(stderr, "\tstatus: ");
@@ -264,7 +262,7 @@ void print_state(lwm2m_context_t *lwm2mH)
         fprintf(stderr, "No LWM2M Server.\r\n");
     } else {
         fprintf(stderr, "LWM2M Servers:\r\n");
-        for (targetP = lwm2mH->serverList ; targetP != NULL ; targetP = targetP->next) {
+        for (targetP = lwm2mH->serverList; targetP != NULL; targetP = targetP->next) {
             fprintf(stderr, " - Server ID %d", targetP->shortID);
             fprintf(stderr, "\tstatus: ");
             switch (targetP->status) {
@@ -275,7 +273,10 @@ void print_state(lwm2m_context_t *lwm2mH)
                     fprintf(stderr, "REGISTRATION PENDING\r\n");
                     break;
                 case STATE_REGISTERED:
-                    fprintf(stderr, "REGISTERED\tlocation: \"%s\"\tLifetime: %lus\r\n", targetP->location, (unsigned long)targetP->lifetime);
+                    fprintf(stderr,
+                            "REGISTERED\tlocation: \"%s\"\tLifetime: %lus\r\n",
+                            targetP->location,
+                            (unsigned long)targetP->lifetime);
                     break;
                 case STATE_REG_UPDATE_PENDING:
                     fprintf(stderr, "REGISTRATION UPDATE PENDING\r\n");
@@ -317,9 +318,7 @@ int main(int argc, char *argv[])
 
     opt = 1;
     while (opt < argc) {
-        if (argv[opt] == NULL
-                || argv[opt][0] != '-'
-                || argv[opt][2] != 0) {
+        if (argv[opt] == NULL || argv[opt][0] != '-' || argv[opt][2] != 0) {
             print_usage();
             return 0;
         }

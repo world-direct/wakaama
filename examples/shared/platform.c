@@ -15,10 +15,10 @@
  *******************************************************************************/
 
 #include <liblwm2m.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <sys/time.h>
 
 #ifndef LWM2M_MEMORY_TRACE
@@ -40,9 +40,7 @@ char *lwm2m_strdup(const char *str)
 
 #endif
 
-int lwm2m_strncmp(const char *s1,
-                  const char *s2,
-                  size_t n)
+int lwm2m_strncmp(const char *s1, const char *s2, size_t n)
 {
     return strncmp(s1, s2, n);
 }

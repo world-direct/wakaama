@@ -18,27 +18,27 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
 
-#include <stdio.h>
-#include <unistd.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <liblwm2m.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <liblwm2m.h>
+#include <unistd.h>
 
 #define LWM2M_STANDARD_PORT_STR "5683"
-#define LWM2M_STANDARD_PORT      5683
-#define LWM2M_DTLS_PORT_STR     "5684"
-#define LWM2M_DTLS_PORT          5684
+#define LWM2M_STANDARD_PORT 5683
+#define LWM2M_DTLS_PORT_STR "5684"
+#define LWM2M_DTLS_PORT 5684
 #define LWM2M_BSSERVER_PORT_STR "5685"
-#define LWM2M_BSSERVER_PORT      5685
+#define LWM2M_BSSERVER_PORT 5685
 
 typedef struct _connection_t {
-    struct _connection_t   *next;
-    int                     sock;
-    struct sockaddr_in6     addr;
-    size_t                  addrLen;
+    struct _connection_t *next;
+    int sock;
+    struct sockaddr_in6 addr;
+    size_t addrLen;
 } connection_t;
 
 int create_socket(const char *portStr, int ai_family);

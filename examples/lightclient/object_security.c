@@ -42,22 +42,21 @@
 
 #include "liblwm2m.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 
 typedef struct _security_instance_ {
-    struct _security_instance_ *next;         // matches lwm2m_list_t::next
-    uint16_t                     instanceId;  // matches lwm2m_list_t::id
-    char                        *uri;
-    bool                         isBootstrap;
-    uint16_t                     shortID;
-    uint32_t                     clientHoldOffTime;
+    struct _security_instance_ *next; // matches lwm2m_list_t::next
+    uint16_t instanceId;              // matches lwm2m_list_t::id
+    char *uri;
+    bool isBootstrap;
+    uint16_t shortID;
+    uint32_t clientHoldOffTime;
 } security_instance_t;
 
-static uint8_t prv_get_value(lwm2m_data_t *dataP,
-                             security_instance_t *targetP)
+static uint8_t prv_get_value(lwm2m_data_t *dataP, security_instance_t *targetP)
 {
 
     switch (dataP->id) {
@@ -75,30 +74,30 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP,
 
         case LWM2M_SECURITY_PUBLIC_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-        {
-            uint8_t value = 0;
+            {
+                uint8_t value = 0;
 
-            lwm2m_data_encode_opaque(&value, 1, dataP);
-        }
-        return COAP_205_CONTENT;
+                lwm2m_data_encode_opaque(&value, 1, dataP);
+            }
+            return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SERVER_PUBLIC_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-        {
-            uint8_t value = 0;
+            {
+                uint8_t value = 0;
 
-            lwm2m_data_encode_opaque(&value, 1, dataP);
-        }
-        return COAP_205_CONTENT;
+                lwm2m_data_encode_opaque(&value, 1, dataP);
+            }
+            return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SECRET_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-        {
-            uint8_t value = 0;
+            {
+                uint8_t value = 0;
 
-            lwm2m_data_encode_opaque(&value, 1, dataP);
-        }
-        return COAP_205_CONTENT;
+                lwm2m_data_encode_opaque(&value, 1, dataP);
+            }
+            return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SECURITY_ID:
             lwm2m_data_encode_int(LWM2M_SECURITY_MODE_NONE, dataP);
@@ -106,19 +105,19 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP,
 
         case LWM2M_SECURITY_SMS_KEY_PARAM_ID:
             // Here we return an opaque of 6 bytes containing a buggy value
-        {
-            char *value = "12345";
-            lwm2m_data_encode_opaque((uint8_t *)value, 6, dataP);
-        }
-        return COAP_205_CONTENT;
+            {
+                char *value = "12345";
+                lwm2m_data_encode_opaque((uint8_t *)value, 6, dataP);
+            }
+            return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SECRET_KEY_ID:
             // Here we return an opaque of 32 bytes containing a buggy value
-        {
-            char *value = "1234567890abcdefghijklmnopqrstu";
-            lwm2m_data_encode_opaque((uint8_t *)value, 32, dataP);
-        }
-        return COAP_205_CONTENT;
+            {
+                char *value = "1234567890abcdefghijklmnopqrstu";
+                lwm2m_data_encode_opaque((uint8_t *)value, 32, dataP);
+            }
+            return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SERVER_NUMBER_ID:
             lwm2m_data_encode_int(0, dataP);
@@ -137,10 +136,7 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP,
     }
 }
 
-static uint8_t prv_security_read(uint16_t instanceId,
-                                 int *numDataP,
-                                 lwm2m_data_t **dataArrayP,
-                                 lwm2m_object_t *objectP)
+static uint8_t prv_security_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP)
 {
     security_instance_t *targetP;
     uint8_t result;
@@ -164,8 +160,7 @@ static uint8_t prv_security_read(uint16_t instanceId,
                               LWM2M_SECURITY_SMS_SECRET_KEY_ID,
                               LWM2M_SECURITY_SMS_SERVER_NUMBER_ID,
                               LWM2M_SECURITY_SHORT_SERVER_ID,
-                              LWM2M_SECURITY_HOLD_OFF_ID
-                             };
+                              LWM2M_SECURITY_HOLD_OFF_ID};
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -173,7 +168,7 @@ static uint8_t prv_security_read(uint16_t instanceId,
             return COAP_500_INTERNAL_SERVER_ERROR;
         }
         *numDataP = nbRes;
-        for (i = 0 ; i < nbRes ; i++) {
+        for (i = 0; i < nbRes; i++) {
             (*dataArrayP)[i].id = resList[i];
         }
     }
@@ -235,8 +230,7 @@ void free_security_object(lwm2m_object_t *objectP)
     lwm2m_free(objectP);
 }
 
-char *get_server_uri(lwm2m_object_t *objectP,
-                     uint16_t secObjInstID)
+char *get_server_uri(lwm2m_object_t *objectP, uint16_t secObjInstID)
 {
     security_instance_t *targetP = (security_instance_t *)LWM2M_LIST_FIND(objectP->instanceList, secObjInstID);
 
