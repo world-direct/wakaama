@@ -315,7 +315,8 @@ static int prv_serializeLinkData(lwm2m_context_t *contextP,
                 }
                 head += res;
             }
-        } break;
+        }
+        break;
 
         case LWM2M_TYPE_OBJECT:
         default:
@@ -415,7 +416,7 @@ int discover_serialize(lwm2m_context_t *contextP,
             parentUri.flag = LWM2M_URI_FLAG_INSTANCE_ID;
             if (serverP != NULL) {
                 res = prv_serializeAttributes(
-                    contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
+                          contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
                 if (res < 0) {
                     return -1; // careful, 0 is valid
                 }
@@ -435,7 +436,7 @@ int discover_serialize(lwm2m_context_t *contextP,
 
             if (serverP != NULL) {
                 res = prv_serializeAttributes(
-                    contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
+                          contextP, &parentUri, serverP, NULL, bufferLink, head - 1, PRV_LINK_BUFFER_SIZE);
                 if (res < 0) {
                     return -1; // careful, 0 is valid
                 }

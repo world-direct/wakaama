@@ -113,7 +113,8 @@ static uint8_t prv_server_read(uint16_t instanceId, int *numDataP, lwm2m_data_t 
                               LWM2M_SERVER_MAX_PERIOD_ID,
                               LWM2M_SERVER_TIMEOUT_ID,
                               LWM2M_SERVER_STORING_ID,
-                              LWM2M_SERVER_BINDING_ID};
+                              LWM2M_SERVER_BINDING_ID
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -153,7 +154,8 @@ prv_server_discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArray
                               LWM2M_SERVER_TIMEOUT_ID,
                               LWM2M_SERVER_STORING_ID,
                               LWM2M_SERVER_BINDING_ID,
-                              LWM2M_SERVER_UPDATE_ID};
+                              LWM2M_SERVER_UPDATE_ID
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -228,10 +230,11 @@ static uint8_t prv_server_write(uint16_t instanceId, int numData, lwm2m_data_t *
                         result = COAP_406_NOT_ACCEPTABLE;
                     }
                 }
-            } break;
+            }
+            break;
 
             case LWM2M_SERVER_LIFETIME_ID:
-                result = prv_set_int_value(dataArray + i, (uint32_t *)&(targetP->lifetime));
+                result = prv_set_int_value(dataArray + i, (uint32_t *) & (targetP->lifetime));
                 break;
 
             case LWM2M_SERVER_MIN_PERIOD_ID:
@@ -259,22 +262,23 @@ static uint8_t prv_server_write(uint16_t instanceId, int numData, lwm2m_data_t *
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            } break;
+            }
+            break;
 
             case LWM2M_SERVER_BINDING_ID:
                 if ((dataArray[i].type == LWM2M_TYPE_STRING || dataArray[i].type == LWM2M_TYPE_OPAQUE) &&
-                    dataArray[i].value.asBuffer.length > 0 && dataArray[i].value.asBuffer.length <= 3 &&
-                    (strncmp((char *)dataArray[i].value.asBuffer.buffer, "U", dataArray[i].value.asBuffer.length) ==
+                        dataArray[i].value.asBuffer.length > 0 && dataArray[i].value.asBuffer.length <= 3 &&
+                        (strncmp((char *)dataArray[i].value.asBuffer.buffer, "U", dataArray[i].value.asBuffer.length) ==
                          0 ||
-                     strncmp((char *)dataArray[i].value.asBuffer.buffer, "UQ", dataArray[i].value.asBuffer.length) ==
+                         strncmp((char *)dataArray[i].value.asBuffer.buffer, "UQ", dataArray[i].value.asBuffer.length) ==
                          0 ||
-                     strncmp((char *)dataArray[i].value.asBuffer.buffer, "S", dataArray[i].value.asBuffer.length) ==
+                         strncmp((char *)dataArray[i].value.asBuffer.buffer, "S", dataArray[i].value.asBuffer.length) ==
                          0 ||
-                     strncmp((char *)dataArray[i].value.asBuffer.buffer, "SQ", dataArray[i].value.asBuffer.length) ==
+                         strncmp((char *)dataArray[i].value.asBuffer.buffer, "SQ", dataArray[i].value.asBuffer.length) ==
                          0 ||
-                     strncmp((char *)dataArray[i].value.asBuffer.buffer, "US", dataArray[i].value.asBuffer.length) ==
+                         strncmp((char *)dataArray[i].value.asBuffer.buffer, "US", dataArray[i].value.asBuffer.length) ==
                          0 ||
-                     strncmp((char *)dataArray[i].value.asBuffer.buffer, "UQS", dataArray[i].value.asBuffer.length) ==
+                         strncmp((char *)dataArray[i].value.asBuffer.buffer, "UQS", dataArray[i].value.asBuffer.length) ==
                          0)) {
                     strncpy(targetP->binding,
                             (char *)dataArray[i].value.asBuffer.buffer,

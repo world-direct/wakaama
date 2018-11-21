@@ -122,7 +122,7 @@ static int prv_readAttributes(multi_option_t *query, lwm2m_attributes_t *attrP)
             }
 
             if (1 != utils_textToFloat(
-                         query->data + ATTR_GREATER_THAN_LEN, query->len - ATTR_GREATER_THAN_LEN, &floatValue)) {
+                        query->data + ATTR_GREATER_THAN_LEN, query->len - ATTR_GREATER_THAN_LEN, &floatValue)) {
                 return -1;
             }
 
@@ -146,7 +146,7 @@ static int prv_readAttributes(multi_option_t *query, lwm2m_attributes_t *attrP)
             }
 
             if (1 !=
-                utils_textToFloat(query->data + ATTR_LESS_THAN_LEN, query->len - ATTR_LESS_THAN_LEN, &floatValue)) {
+                    utils_textToFloat(query->data + ATTR_LESS_THAN_LEN, query->len - ATTR_LESS_THAN_LEN, &floatValue)) {
                 return -1;
             }
 
@@ -220,7 +220,7 @@ uint8_t dm_handleRequest(lwm2m_context_t *contextP,
     }
 
     if (serverP->status != STATE_REGISTERED && serverP->status != STATE_REG_UPDATE_NEEDED &&
-        serverP->status != STATE_REG_FULL_UPDATE_NEEDED && serverP->status != STATE_REG_UPDATE_PENDING) {
+            serverP->status != STATE_REG_FULL_UPDATE_NEEDED && serverP->status != STATE_REG_UPDATE_PENDING) {
         return COAP_IGNORE;
     }
 
@@ -279,7 +279,8 @@ uint8_t dm_handleRequest(lwm2m_context_t *contextP,
             } else {
                 lwm2m_free(buffer);
             }
-        } break;
+        }
+        break;
 
         case COAP_POST: {
             if (!LWM2M_URI_IS_SET_INSTANCE(uriP)) {
@@ -308,7 +309,8 @@ uint8_t dm_handleRequest(lwm2m_context_t *contextP,
             } else {
                 result = object_execute(contextP, uriP, message->payload, message->payload_len);
             }
-        } break;
+        }
+        break;
 
         case COAP_PUT: {
             if (IS_OPTION(message, COAP_OPTION_URI_QUERY)) {
@@ -324,7 +326,8 @@ uint8_t dm_handleRequest(lwm2m_context_t *contextP,
             } else {
                 result = COAP_400_BAD_REQUEST;
             }
-        } break;
+        }
+        break;
 
         case COAP_DELETE: {
             if (!LWM2M_URI_IS_SET_INSTANCE(uriP) || LWM2M_URI_IS_SET_RESOURCE(uriP)) {
@@ -572,7 +575,7 @@ int lwm2m_dm_write_attributes(lwm2m_context_t *contextP,
         return COAP_400_BAD_REQUEST;
     }
     if (ATTR_FLAG_NUMERIC == (attrP->toSet & ATTR_FLAG_NUMERIC) &&
-        (attrP->lessThan + 2 * attrP->step >= attrP->greaterThan)) {
+            (attrP->lessThan + 2 * attrP->step >= attrP->greaterThan)) {
         return COAP_400_BAD_REQUEST;
     }
 
@@ -630,7 +633,7 @@ int lwm2m_dm_write_attributes(lwm2m_context_t *contextP,
     if (attrP->toSet & LWM2M_ATTR_FLAG_GREATER_THAN) {
         memcpy(buffer, ATTR_GREATER_THAN_STR, ATTR_GREATER_THAN_LEN);
         length = utils_floatToText(
-            attrP->greaterThan, buffer + ATTR_GREATER_THAN_LEN, _PRV_BUFFER_SIZE - ATTR_GREATER_THAN_LEN);
+                     attrP->greaterThan, buffer + ATTR_GREATER_THAN_LEN, _PRV_BUFFER_SIZE - ATTR_GREATER_THAN_LEN);
         if (length == 0) {
             transaction_free(transaction);
             return COAP_500_INTERNAL_SERVER_ERROR;

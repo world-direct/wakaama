@@ -155,7 +155,8 @@ static uint8_t prv_security_read(uint16_t instanceId, int *numDataP, lwm2m_data_
                               LWM2M_SECURITY_SMS_SERVER_NUMBER_ID,
                               LWM2M_SECURITY_SHORT_SERVER_ID,
                               LWM2M_SECURITY_HOLD_OFF_ID,
-                              LWM2M_SECURITY_BOOTSTRAP_TIMEOUT_ID};
+                              LWM2M_SECURITY_BOOTSTRAP_TIMEOUT_ID
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -229,7 +230,8 @@ static uint8_t prv_security_write(uint16_t instanceId, int numData, lwm2m_data_t
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            } break;
+            }
+            break;
             case LWM2M_SECURITY_PUBLIC_KEY_ID:
                 if (targetP->publicIdentity != NULL) {
                     lwm2m_free(targetP->publicIdentity);
@@ -314,7 +316,8 @@ static uint8_t prv_security_write(uint16_t instanceId, int numData, lwm2m_data_t
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            } break;
+            }
+            break;
 
             case LWM2M_SECURITY_HOLD_OFF_ID: {
                 int64_t value;

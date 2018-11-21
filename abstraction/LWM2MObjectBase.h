@@ -10,12 +10,12 @@ extern "C" {
 
 class LWM2MObjectBase {
 
-  public:
+public:
     LWM2MObjectBase(lwm2m_context_t *context, uint16_t objID);
     lwm2m_object_t *GetLWM2MObject(void);
     uint8_t PerformValueChange(lwm2m_uri_t *uri, const char *value, size_t valueLength);
 
-  protected:
+protected:
     virtual uint8_t Read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP) = 0;
     virtual uint8_t Write(uint16_t instanceId, int numData, lwm2m_data_t *dataArrayP, lwm2m_object_t *objectP) = 0;
     virtual uint8_t
@@ -29,7 +29,7 @@ class LWM2MObjectBase {
     lwm2m_context_t *GetLWM2MContext();
     uint16_t GetCurrentInstancesCount();
 
-  private:
+private:
     lwm2m_context_t *_context;
     lwm2m_object_t _lwm2mObject;
 

@@ -353,7 +353,7 @@ static int coap_get_variable(const uint8_t *buffer, size_t length, const char *n
 
     for (start = buffer; start + name_len < end; ++start) {
         if ((start == buffer || start[-1] == '&') && start[name_len] == '=' &&
-            strncmp(name, (char *)start, name_len) == 0) {
+                strncmp(name, (char *)start, name_len) == 0) {
 
             /* Point start to variable value */
             start += name_len + 1;

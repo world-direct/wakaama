@@ -387,7 +387,8 @@ uint8_t bootstrap_handleCommand(lwm2m_context_t *contextP,
                     lwm2m_data_free(size, dataP);
                 }
             }
-        } break;
+        }
+        break;
 
         case COAP_DELETE: {
             if (LWM2M_URI_IS_SET_RESOURCE(uriP)) {
@@ -402,7 +403,8 @@ uint8_t bootstrap_handleCommand(lwm2m_context_t *contextP,
                     }
                 }
             }
-        } break;
+        }
+        break;
 
         case COAP_GET:
         case COAP_POST:

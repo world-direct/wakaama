@@ -34,9 +34,11 @@ typedef struct MemoryEntry {
 } memory_entry_t;
 
 static memory_entry_t prv_memory_malloc_list = {
-    .next = NULL, .file = "head", .function = "malloc", .lineno = 0, .size = 0, .count = 0};
+    .next = NULL, .file = "head", .function = "malloc", .lineno = 0, .size = 0, .count = 0
+};
 static memory_entry_t prv_memory_free_list = {
-    .next = NULL, .file = "head", .function = "free", .lineno = 0, .size = 0, .count = 0};
+    .next = NULL, .file = "head", .function = "free", .lineno = 0, .size = 0, .count = 0
+};
 
 static memory_entry_t *prv_memory_find_previous(memory_entry_t *list, void *memory)
 {

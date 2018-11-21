@@ -401,12 +401,12 @@ int utils_isAltPathValid(const char *altPath)
         }
         // TODO: Check needs for sub-delims, ':' and '@'
         if ((altPath[i] < 'A' || altPath[i] > 'Z') // ALPHA
-            &&
-            (altPath[i] < 'a' || altPath[i] > 'z') && (altPath[i] < '0' || altPath[i] > '9') // DIGIT
-            &&
-            (altPath[i] != '-') // Other unreserved
-            &&
-            (altPath[i] != '.') && (altPath[i] != '_') && (altPath[i] != '~') && (altPath[i] != '%')) { // pct_encoded
+                &&
+                (altPath[i] < 'a' || altPath[i] > 'z') && (altPath[i] < '0' || altPath[i] > '9') // DIGIT
+                &&
+                (altPath[i] != '-') // Other unreserved
+                &&
+                (altPath[i] != '.') && (altPath[i] != '_') && (altPath[i] != '~') && (altPath[i] != '%')) { // pct_encoded
             return 0;
         }
     }
@@ -453,7 +453,8 @@ void utils_copyValue(void *dst, const void *src, size_t len)
 static char b64Alphabet[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                               'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
+                               'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+                              };
 
 static void prv_encodeBlock(uint8_t input[3], uint8_t output[4])
 {

@@ -286,7 +286,7 @@ static int prv_parseItem(uint8_t *buffer, size_t bufferLen, _record_t *recordP)
 
                         // Check for " around URI
                         if (valueLen < 3 || buffer[index + valueStart] != '"' ||
-                            buffer[index + valueStart + valueLen - 1] != '"') {
+                                buffer[index + valueStart + valueLen - 1] != '"') {
                             return -1;
                         }
                         // Ignore starting /
@@ -321,7 +321,8 @@ static int prv_parseItem(uint8_t *buffer, size_t bufferLen, _record_t *recordP)
                         if (i < valueLen - 1) {
                             return -1;
                         }
-                    } break;
+                    }
+                    break;
 
                     case 'v':
                         if (recordP->type != _TYPE_UNSET) {
@@ -339,7 +340,8 @@ static int prv_parseItem(uint8_t *buffer, size_t bufferLen, _record_t *recordP)
                     default:
                         return -1;
                 }
-            } break;
+            }
+            break;
 
             case 2: {
                 // "bv", "ov", or "sv"
@@ -374,7 +376,7 @@ static int prv_parseItem(uint8_t *buffer, size_t bufferLen, _record_t *recordP)
                         }
                         // Check for " around value
                         if (valueLen < 2 || buffer[index + valueStart] != '"' ||
-                            buffer[index + valueStart + valueLen - 1] != '"') {
+                                buffer[index + valueStart + valueLen - 1] != '"') {
                             return -1;
                         }
                         recordP->type = _TYPE_STRING;
@@ -385,7 +387,8 @@ static int prv_parseItem(uint8_t *buffer, size_t bufferLen, _record_t *recordP)
                     default:
                         return -1;
                 }
-            } break;
+            }
+            break;
 
             default:
                 return -1;
@@ -430,7 +433,8 @@ static bool prv_convertValue(_record_t *recordP, lwm2m_data_t *targetP)
 
                 lwm2m_data_encode_float(value, targetP);
             }
-        } break;
+        }
+        break;
 
         case _TYPE_STRING:
             lwm2m_data_encode_opaque(recordP->value, recordP->valueLen, targetP);
@@ -602,7 +606,7 @@ static int prv_convertRecord(lwm2m_uri_t *uriP, _record_t *recordArray, int coun
             level = prv_decreaseLevel(rootLevel);
             for (i = 1; i <= resSegmentIndex; i++) {
                 targetP = prv_findDataItem(
-                    parentP->value.asChildren.array, parentP->value.asChildren.count, recordArray[index].ids[i]);
+                              parentP->value.asChildren.array, parentP->value.asChildren.count, recordArray[index].ids[i]);
                 if (targetP == NULL) {
                     targetP = prv_extendData(parentP);
                     if (targetP == NULL) {
@@ -663,7 +667,7 @@ static int prv_dataStrip(int size, lwm2m_data_t *dataP, lwm2m_data_t **resultP)
             memcpy((*resultP) + j, dataP + i, sizeof(lwm2m_data_t));
 
             if (dataP[i].type == LWM2M_TYPE_OBJECT || dataP[i].type == LWM2M_TYPE_OBJECT_INSTANCE ||
-                dataP[i].type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
+                    dataP[i].type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
                 int childLen;
 
                 childLen = prv_dataStrip(dataP[i].value.asChildren.count,
@@ -787,7 +791,8 @@ int json_parse(lwm2m_uri_t *uriP, uint8_t *buffer, size_t bufferLen, lwm2m_data_
                 if (buffer[index] != ']') {
                     goto error;
                 }
-            } break;
+            }
+            break;
 
             case 'b':
                 if (bufferLen - index < JSON_MIN_BX_LEN) {
@@ -833,7 +838,7 @@ int json_parse(lwm2m_uri_t *uriP, uint8_t *buffer, size_t bufferLen, lwm2m_data_
                         index -= 3;
                         itemLen = 0;
                         while (buffer[index + itemLen] != '}' && buffer[index + itemLen] != ',' &&
-                               index + itemLen < bufferLen) {
+                                index + itemLen < bufferLen) {
                             itemLen++;
                         }
                         if (index + itemLen == bufferLen) {
@@ -845,7 +850,8 @@ int json_parse(lwm2m_uri_t *uriP, uint8_t *buffer, size_t bufferLen, lwm2m_data_
                         }
                         bnStart += index;
                         index += next - 1;
-                    } break;
+                    }
+                    break;
                     default:
                         goto error;
                 }
@@ -1038,7 +1044,8 @@ static int prv_serializeValue(lwm2m_data_t *tlvP, uint8_t *buffer, size_t buffer
             }
             memcpy(buffer + head, JSON_ITEM_NUM_END, JSON_ITEM_NUM_END_SIZE);
             head += JSON_ITEM_NUM_END_SIZE;
-        } break;
+        }
+        break;
 
         case LWM2M_TYPE_FLOAT: {
             double value;
@@ -1064,7 +1071,8 @@ static int prv_serializeValue(lwm2m_data_t *tlvP, uint8_t *buffer, size_t buffer
             }
             memcpy(buffer + head, JSON_ITEM_NUM_END, JSON_ITEM_NUM_END_SIZE);
             head += JSON_ITEM_NUM_END_SIZE;
-        } break;
+        }
+        break;
 
         case LWM2M_TYPE_BOOLEAN: {
             bool value;
@@ -1086,7 +1094,8 @@ static int prv_serializeValue(lwm2m_data_t *tlvP, uint8_t *buffer, size_t buffer
                 memcpy(buffer, JSON_ITEM_BOOL_FALSE, JSON_ITEM_BOOL_FALSE_SIZE);
                 head = JSON_ITEM_BOOL_FALSE_SIZE;
             }
-        } break;
+        }
+        break;
 
         case LWM2M_TYPE_OPAQUE:
             if (bufferLen < JSON_ITEM_STRING_BEGIN_SIZE) {
@@ -1096,7 +1105,7 @@ static int prv_serializeValue(lwm2m_data_t *tlvP, uint8_t *buffer, size_t buffer
             head = JSON_ITEM_STRING_BEGIN_SIZE;
 
             res = utils_base64Encode(
-                tlvP->value.asBuffer.buffer, tlvP->value.asBuffer.length, buffer + head, bufferLen - head);
+                      tlvP->value.asBuffer.buffer, tlvP->value.asBuffer.length, buffer + head, bufferLen - head);
             if (res == 0) {
                 return -1;
             }
@@ -1155,13 +1164,14 @@ int prv_serializeData(lwm2m_data_t *tlvP, uint8_t *parentUriStr, size_t parentUr
             head = 0;
             for (index = 0; index < tlvP->value.asChildren.count; index++) {
                 res = prv_serializeData(
-                    tlvP->value.asChildren.array + index, uriStr, uriLen, buffer + head, bufferLen - head);
+                          tlvP->value.asChildren.array + index, uriStr, uriLen, buffer + head, bufferLen - head);
                 if (res < 0) {
                     return -1;
                 }
                 head += res;
             }
-        } break;
+        }
+        break;
 
         default:
             if (bufferLen < JSON_RES_ITEM_URI_SIZE) {

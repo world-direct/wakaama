@@ -507,7 +507,7 @@ void registration_deregister(lwm2m_context_t *contextP, lwm2m_server_t *serverP)
     LOG_ARG("State: %s, serverP->status: %s", STR_STATE(contextP->state), STR_STATUS(serverP->status));
 
     if (serverP->status == STATE_DEREGISTERED || serverP->status == STATE_REG_PENDING ||
-        serverP->status == STATE_DEREG_PENDING || serverP->status == STATE_REG_FAILED || serverP->location == NULL) {
+            serverP->status == STATE_DEREG_PENDING || serverP->status == STATE_REG_FAILED || serverP->location == NULL) {
         return;
     }
 
@@ -768,12 +768,12 @@ static int prv_parseLinkAttributes(uint8_t *data, uint16_t length, bool *support
         }
 
         if (keyLength == REG_ATTR_TYPE_KEY_LEN &&
-            0 == lwm2m_strncmp(REG_ATTR_TYPE_KEY, (char *)data + index + keyStart, keyLength)) {
+                0 == lwm2m_strncmp(REG_ATTR_TYPE_KEY, (char *)data + index + keyStart, keyLength)) {
             if (isValid == true) {
                 return 0; // declared twice
             }
             if (valueLength != REG_ATTR_TYPE_VALUE_LEN ||
-                0 != lwm2m_strncmp(REG_ATTR_TYPE_VALUE, (char *)data + index + valueStart, valueLength)) {
+                    0 != lwm2m_strncmp(REG_ATTR_TYPE_VALUE, (char *)data + index + valueStart, valueLength)) {
                 return 0;
             }
             isValid = true;
@@ -783,7 +783,7 @@ static int prv_parseLinkAttributes(uint8_t *data, uint16_t length, bool *support
                 return 0; // declared twice
             }
             if (valueLength == REG_ATTR_CONTENT_JSON_LEN &&
-                0 == lwm2m_strncmp(REG_ATTR_CONTENT_JSON, (char *)data + index + valueStart, valueLength)) {
+                    0 == lwm2m_strncmp(REG_ATTR_CONTENT_JSON, (char *)data + index + valueStart, valueLength)) {
                 *supportJSON = true;
             } else {
                 return 0;
@@ -1033,7 +1033,7 @@ uint8_t registration_handleRequest(
                 return COAP_400_BAD_REQUEST;
             }
             if (message->content_type != (coap_content_type_t)LWM2M_CONTENT_LINK &&
-                message->content_type != (coap_content_type_t)LWM2M_CONTENT_TEXT) {
+                    message->content_type != (coap_content_type_t)LWM2M_CONTENT_TEXT) {
                 return COAP_400_BAD_REQUEST;
             }
 
@@ -1071,7 +1071,7 @@ uint8_t registration_handleRequest(
                     }
                     // version must be 1.0
                     if (strlen(version) != LWM2M_VERSION_LEN ||
-                        lwm2m_strncmp(version, LWM2M_VERSION, LWM2M_VERSION_LEN)) {
+                            lwm2m_strncmp(version, LWM2M_VERSION, LWM2M_VERSION_LEN)) {
                         lwm2m_free(version);
                         lwm2m_free(name);
                         if (msisdn != NULL) {
@@ -1234,7 +1234,8 @@ uint8_t registration_handleRequest(
                 default:
                     return COAP_400_BAD_REQUEST;
             }
-        } break;
+        }
+        break;
 
         case COAP_DELETE: {
             lwm2m_client_t *clientP;
@@ -1258,7 +1259,8 @@ uint8_t registration_handleRequest(
             }
             registration_freeClient(clientP);
             result = COAP_202_DELETED;
-        } break;
+        }
+        break;
 
         default:
             return COAP_400_BAD_REQUEST;
@@ -1307,7 +1309,8 @@ void registration_step(lwm2m_context_t *contextP, time_t currentTime, time_t *ti
                 } else if (interval < *timeoutP) {
                     *timeoutP = interval;
                 }
-            } break;
+            }
+            break;
 
             case STATE_REG_UPDATE_NEEDED:
                 prv_updateRegistration(contextP, targetP, false);

@@ -167,7 +167,7 @@ uint8_t object_readData(lwm2m_context_t *contextP, lwm2m_uri_t *uriP, int *sizeP
             i = 0;
             while (instanceP != NULL && result == COAP_205_CONTENT) {
                 result = targetP->readFunc(instanceP->id,
-                                           (int *)&((*dataP)[i].value.asChildren.count),
+                                           (int *) & ((*dataP)[i].value.asChildren.count),
                                            &((*dataP)[i].value.asChildren.array),
                                            targetP);
                 (*dataP)[i].type = LWM2M_TYPE_OBJECT_INSTANCE;
@@ -300,7 +300,7 @@ object_create(lwm2m_context_t *contextP, lwm2m_uri_t *uriP, lwm2m_media_type_t f
                 goto exit;
             }
             result = targetP->createFunc(
-                dataP[0].id, dataP[0].value.asChildren.count, dataP[0].value.asChildren.array, targetP);
+                         dataP[0].id, dataP[0].value.asChildren.count, dataP[0].value.asChildren.array, targetP);
             uriP->instanceId = dataP[0].id;
             uriP->flag |= LWM2M_URI_FLAG_INSTANCE_ID;
             break;
@@ -421,7 +421,7 @@ uint8_t object_discover(
             i = 0;
             while (instanceP != NULL && result == COAP_205_CONTENT) {
                 result = targetP->discoverFunc(instanceP->id,
-                                               (int *)&(dataP[i].value.asChildren.count),
+                                               (int *) & (dataP[i].value.asChildren.count),
                                                &(dataP[i].value.asChildren.array),
                                                targetP);
                 dataP[i].type = LWM2M_TYPE_OBJECT_INSTANCE;
@@ -703,7 +703,7 @@ static int prv_getMandatoryInfo(lwm2m_object_t *objectP, uint16_t instanceID, lw
     }
 
     if (0 == lwm2m_data_decode_int(dataP, &value) || value < 0 ||
-        value > 0xFFFFFFFF) { // This is an implementation limit
+            value > 0xFFFFFFFF) { // This is an implementation limit
         lwm2m_data_free(size, dataP);
         return -1;
     }
@@ -744,7 +744,7 @@ int object_getServers(lwm2m_context_t *contextP, bool checkOnly)
     securityInstP = securityObjP->instanceList;
     while (securityInstP != NULL) {
         if (LWM2M_LIST_FIND(contextP->bootstrapServerList, securityInstP->id) == NULL &&
-            LWM2M_LIST_FIND(contextP->serverList, securityInstP->id) == NULL) {
+                LWM2M_LIST_FIND(contextP->serverList, securityInstP->id) == NULL) {
             // This server is new. eg created by last bootstrap
 
             lwm2m_data_t *dataP;
@@ -782,7 +782,7 @@ int object_getServers(lwm2m_context_t *contextP, bool checkOnly)
             }
 
             if (0 == lwm2m_data_decode_int(dataP + 1, &value) || value < (isBootstrap ? 0 : 1) ||
-                value > 0xFFFF) { // 0 is forbidden as a Short Server ID
+                    value > 0xFFFF) { // 0 is forbidden as a Short Server ID
                 lwm2m_free(targetP);
                 lwm2m_data_free(size, dataP);
                 return -1;
@@ -791,7 +791,7 @@ int object_getServers(lwm2m_context_t *contextP, bool checkOnly)
 
             if (isBootstrap == true) {
                 if (0 == lwm2m_data_decode_int(dataP + 2, &value) || value < 0 ||
-                    value > 0xFFFFFFFF) { // This is an implementation limit
+                        value > 0xFFFFFFFF) { // This is an implementation limit
                     lwm2m_free(targetP);
                     lwm2m_data_free(size, dataP);
                     return -1;
@@ -848,7 +848,7 @@ uint8_t object_createInstance(lwm2m_context_t *contextP, lwm2m_uri_t *uriP, lwm2
     }
 
     return targetP->createFunc(
-        lwm2m_list_newId(targetP->instanceList), dataP->value.asChildren.count, dataP->value.asChildren.array, targetP);
+               lwm2m_list_newId(targetP->instanceList), dataP->value.asChildren.count, dataP->value.asChildren.array, targetP);
 }
 
 uint8_t object_writeInstance(lwm2m_context_t *contextP, lwm2m_uri_t *uriP, lwm2m_data_t *dataP)

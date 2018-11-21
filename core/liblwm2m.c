@@ -436,7 +436,8 @@ next_step:
                     // keep on waiting
                     break;
             }
-        } break;
+        }
+        break;
 
         case STATE_READY:
             if (registration_getStatus(contextP) == STATE_REG_FAILED) {

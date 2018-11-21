@@ -106,7 +106,8 @@ static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataA
                               RES_O_TX_DATA,
                               RES_O_RX_DATA,
                               RES_O_MAX_MESSAGE_SIZE,
-                              RES_O_AVERAGE_MESSAGE_SIZE};
+                              RES_O_AVERAGE_MESSAGE_SIZE
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);

@@ -136,7 +136,8 @@ handle_request(lwm2m_context_t *contextP, void *fromSessionH, coap_packet_t *mes
                 }
             }
 #endif
-        } break;
+        }
+        break;
 
 #ifdef LWM2M_BOOTSTRAP
         case LWM2M_URI_FLAG_DELETE_ALL:
@@ -346,7 +347,7 @@ void lwm2m_handle_packet(lwm2m_context_t *contextP, uint8_t *buffer, int length,
 
 #ifdef LWM2M_SERVER_MODE
                     if (!done && IS_OPTION(message, COAP_OPTION_OBSERVE) &&
-                        ((message->code == COAP_204_CHANGED) || (message->code == COAP_205_CONTENT))) {
+                            ((message->code == COAP_204_CHANGED) || (message->code == COAP_205_CONTENT))) {
                         done = observe_handleNotify(contextP, fromSessionH, message, response);
                     }
 #endif
@@ -354,7 +355,8 @@ void lwm2m_handle_packet(lwm2m_context_t *contextP, uint8_t *buffer, int length,
                         coap_init_message(response, COAP_TYPE_ACK, 0, message->mid);
                         coap_error_code = message_send(contextP, response, fromSessionH);
                     }
-                } break;
+                }
+                break;
 
                 case COAP_TYPE_RST:
                     /* Cancel possible subscriptions. */

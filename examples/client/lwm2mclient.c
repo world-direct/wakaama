@@ -746,7 +746,7 @@ void print_usage(void)
         stdout,
         "  -i STRING\tSet the device management or bootstrap server PSK identity. If not set use none secure mode\r\n");
     fprintf(stdout, "  -s HEXSTRING\tSet the device management or bootstrap server Pre-Shared-Key. If not set use none "
-                    "secure mode\r\n");
+            "secure mode\r\n");
 #endif
     fprintf(stdout, "\r\n");
 }
@@ -788,42 +788,51 @@ int main(int argc, char *argv[])
      */
     command_desc_t commands[] = {
         {"list", "List known servers.", NULL, prv_output_servers, NULL},
-        {"change",
-         "Change the value of resource.",
-         " change URI [DATA]\r\n"
-         "   URI: uri of the resource such as /3/0, /3/0/2\r\n"
-         "   DATA: (optional) new value\r\n",
-         prv_change,
-         NULL},
-        {"update",
-         "Trigger a registration update",
-         " update SERVER\r\n"
-         "   SERVER: short server id such as 123\r\n",
-         prv_update,
-         NULL},
+        {
+            "change",
+            "Change the value of resource.",
+            " change URI [DATA]\r\n"
+            "   URI: uri of the resource such as /3/0, /3/0/2\r\n"
+            "   DATA: (optional) new value\r\n",
+            prv_change,
+            NULL
+        },
+        {
+            "update",
+            "Trigger a registration update",
+            " update SERVER\r\n"
+            "   SERVER: short server id such as 123\r\n",
+            prv_update,
+            NULL
+        },
 #ifdef LWM2M_BOOTSTRAP
         {"bootstrap", "Initiate a DI bootstrap process", NULL, prv_initiate_bootstrap, NULL},
-        {"dispb",
-         "Display current backup of objects/instances/resources\r\n"
-         "\t(only security and server objects are backupped)",
-         NULL,
-         prv_display_backup,
-         NULL},
+        {
+            "dispb",
+            "Display current backup of objects/instances/resources\r\n"
+            "\t(only security and server objects are backupped)",
+            NULL,
+            prv_display_backup,
+            NULL
+        },
 #endif
         {"ls", "List Objects and Instances", NULL, prv_object_list, NULL},
         {"disp", "Display current objects/instances/resources", NULL, prv_display_objects, NULL},
-        {"dump",
-         "Dump an Object",
-         "dump URI"
-         "URI: uri of the Object or Instance such as /3/0, /1\r\n",
-         prv_object_dump,
-         NULL},
+        {
+            "dump",
+            "Dump an Object",
+            "dump URI"
+            "URI: uri of the Object or Instance such as /3/0, /1\r\n",
+            prv_object_dump,
+            NULL
+        },
         {"add", "Add support of object 31024", NULL, prv_add, NULL},
         {"rm", "Remove support of object 31024", NULL, prv_remove, NULL},
         {"quit", "Quit the client gracefully.", NULL, prv_quit, NULL},
         {"^C", "Quit the client abruptly (without sending a de-register message).", NULL, NULL, NULL},
 
-        COMMAND_END_LIST};
+        COMMAND_END_LIST
+    };
 
     memset(&data, 0, sizeof(client_data_t));
     data.addressFamily = AF_INET6;
@@ -930,10 +939,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-/*
- * Now the main function fill an array with each object, this list will be later passed to liblwm2m.
- * Those functions are located in their respective object file.
- */
+    /*
+     * Now the main function fill an array with each object, this list will be later passed to liblwm2m.
+     * Those functions are located in their respective object file.
+     */
 #ifdef WITH_TINYDTLS
     if (psk != NULL) {
         pskLen = strlen(psk) / 2;
@@ -1217,9 +1226,9 @@ int main(int argc, char *argv[])
 
                     connP = connection_find(data.connList, &addr, addrLen);
                     if (connP != NULL) {
-/*
- * Let liblwm2m respond to the query depending on the context
- */
+                        /*
+                         * Let liblwm2m respond to the query depending on the context
+                         */
 #ifdef WITH_TINYDTLS
                         int result = connection_handle_packet(connP, buffer, numBytes);
                         if (0 != result) {

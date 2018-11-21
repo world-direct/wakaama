@@ -73,7 +73,7 @@ static void test_uri_decode(void)
     CU_ASSERT_PTR_NOT_NULL_FATAL(uri);
     CU_ASSERT_EQUAL(uri->flag,
                     LWM2M_URI_FLAG_DM | LWM2M_URI_FLAG_OBJECT_ID | LWM2M_URI_FLAG_INSTANCE_ID |
-                        LWM2M_URI_FLAG_RESOURCE_ID);
+                    LWM2M_URI_FLAG_RESOURCE_ID);
     CU_ASSERT_EQUAL(uri->objectId, 9050);
     CU_ASSERT_EQUAL(uri->instanceId, 11);
     CU_ASSERT_EQUAL(uri->resourceId, 0);

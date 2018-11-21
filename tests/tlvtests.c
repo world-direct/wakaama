@@ -27,7 +27,7 @@ static void test_tlv_new(void)
     MEMORY_TRACE_BEFORE;
     lwm2m_data_t *dataP = lwm2m_data_new(10);
     CU_ASSERT_PTR_NOT_NULL(dataP);
-    MEMORY_TRACE_AFTER(<);
+    MEMORY_TRACE_AFTER( <);
 }
 
 static void test_tlv_free(void)

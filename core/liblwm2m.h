@@ -494,7 +494,7 @@ typedef struct _lwm2m_server_ {
     uint16_t secObjInstID;       // matches lwm2m_list_t::id
     uint16_t shortID;            // servers short ID, may be 0 for bootstrap server
     time_t lifetime;     // lifetime of the registration in sec or 0 if default value (86400 sec), also used as hold off
-                         // time for bootstrap servers
+    // time for bootstrap servers
     time_t registration; // date of the last registration in sec or end of client hold off time for bootstrap servers
     lwm2m_binding_t binding; // client connection mode with this server
     void *sessionH;
@@ -502,7 +502,7 @@ typedef struct _lwm2m_server_ {
     char *location;
     bool dirty;
     lwm2m_block1_data_t *block1Data; // buffer to handle block1 data, should be replace by a list to support several
-                                     // block1 transfer by server.
+    // block1 transfer by server.
     lwm2m_attributes_t *defaultAttributes;
 } lwm2m_server_t;
 
@@ -585,7 +585,7 @@ struct _lwm2m_transaction_ {
     void *peerH;
     uint8_t ack_received; // indicates, that the ACK was received
     time_t
-        response_timeout; // timeout to wait for response, if token is used. When 0, use calculated acknowledge timeout.
+    response_timeout; // timeout to wait for response, if token is used. When 0, use calculated acknowledge timeout.
     uint8_t retrans_counter;
     time_t retrans_time;
     void *message;

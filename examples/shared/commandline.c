@@ -41,7 +41,7 @@ static command_desc_t *prv_find_command(command_desc_t *commandArray, char *buff
 
     i = 0;
     while (commandArray[i].name != NULL &&
-           (strlen(commandArray[i].name) != length || strncmp(buffer, commandArray[i].name, length))) {
+            (strlen(commandArray[i].name) != length || strncmp(buffer, commandArray[i].name, length))) {
         i++;
     }
 
@@ -214,7 +214,7 @@ void output_tlv(FILE *stream, uint8_t *buffer, size_t buffer_len, int indent)
     int result;
 
     while (0 != (result = lwm2m_decode_TLV(
-                     (uint8_t *)buffer + length, buffer_len - length, &type, &id, &dataIndex, &dataLen))) {
+                              (uint8_t *)buffer + length, buffer_len - length, &type, &id, &dataIndex, &dataLen))) {
         print_indent(stream, indent);
         fprintf(stream, "{\r\n");
         print_indent(stream, indent + 1);
@@ -391,20 +391,20 @@ void dump_tlv(FILE *stream, int size, lwm2m_data_t *dataP, int indent)
 static const char *prv_status_to_string(int status)
 {
     switch (status) {
-        CODE_TO_STRING(COAP_NO_ERROR);
-        CODE_TO_STRING(COAP_IGNORE);
-        CODE_TO_STRING(COAP_201_CREATED);
-        CODE_TO_STRING(COAP_202_DELETED);
-        CODE_TO_STRING(COAP_204_CHANGED);
-        CODE_TO_STRING(COAP_205_CONTENT);
-        CODE_TO_STRING(COAP_400_BAD_REQUEST);
-        CODE_TO_STRING(COAP_401_UNAUTHORIZED);
-        CODE_TO_STRING(COAP_404_NOT_FOUND);
-        CODE_TO_STRING(COAP_405_METHOD_NOT_ALLOWED);
-        CODE_TO_STRING(COAP_406_NOT_ACCEPTABLE);
-        CODE_TO_STRING(COAP_500_INTERNAL_SERVER_ERROR);
-        CODE_TO_STRING(COAP_501_NOT_IMPLEMENTED);
-        CODE_TO_STRING(COAP_503_SERVICE_UNAVAILABLE);
+            CODE_TO_STRING(COAP_NO_ERROR);
+            CODE_TO_STRING(COAP_IGNORE);
+            CODE_TO_STRING(COAP_201_CREATED);
+            CODE_TO_STRING(COAP_202_DELETED);
+            CODE_TO_STRING(COAP_204_CHANGED);
+            CODE_TO_STRING(COAP_205_CONTENT);
+            CODE_TO_STRING(COAP_400_BAD_REQUEST);
+            CODE_TO_STRING(COAP_401_UNAUTHORIZED);
+            CODE_TO_STRING(COAP_404_NOT_FOUND);
+            CODE_TO_STRING(COAP_405_METHOD_NOT_ALLOWED);
+            CODE_TO_STRING(COAP_406_NOT_ACCEPTABLE);
+            CODE_TO_STRING(COAP_500_INTERNAL_SERVER_ERROR);
+            CODE_TO_STRING(COAP_501_NOT_IMPLEMENTED);
+            CODE_TO_STRING(COAP_503_SERVICE_UNAVAILABLE);
         default:
             return "";
     }
@@ -502,7 +502,8 @@ size_t base64_decode(uint8_t *dataP, size_t dataLen, uint8_t **bufferP)
             *bufferP[result_index - 3] = (tmp[0] << 2) | (tmp[1] >> 4);
             *bufferP[result_index - 2] = (tmp[1] << 4);
             result_len -= 2;
-        } break;
+        }
+        break;
         case 3: {
             uint8_t tmp[3];
 
@@ -514,7 +515,8 @@ size_t base64_decode(uint8_t *dataP, size_t dataLen, uint8_t **bufferP)
             *bufferP[result_index - 2] = (tmp[1] << 4) | (tmp[2] >> 2);
             *bufferP[result_index - 1] = (tmp[2] << 6);
             result_len -= 1;
-        } break;
+        }
+        break;
         default:
             // error
             lwm2m_free(*bufferP);

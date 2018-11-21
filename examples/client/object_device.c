@@ -314,7 +314,8 @@ static uint8_t prv_device_read(uint16_t instanceId, int *numDataP, lwm2m_data_t 
                               RES_O_CURRENT_TIME,
                               RES_O_UTC_OFFSET,
                               RES_O_TIMEZONE,
-                              RES_M_BINDING_MODES};
+                              RES_M_BINDING_MODES
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -367,7 +368,8 @@ prv_device_discover(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArray
                               RES_O_CURRENT_TIME,
                               RES_O_UTC_OFFSET,
                               RES_O_TIMEZONE,
-                              RES_M_BINDING_MODES};
+                              RES_M_BINDING_MODES
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -591,7 +593,8 @@ uint8_t device_change(lwm2m_data_t *dataArray, lwm2m_object_t *objectP)
             } else {
                 result = COAP_400_BAD_REQUEST;
             }
-        } break;
+        }
+        break;
         case RES_M_ERROR_CODE:
             if (1 == lwm2m_data_decode_int(dataArray, &((device_data_t *)(objectP->userData))->error)) {
                 result = COAP_204_CHANGED;

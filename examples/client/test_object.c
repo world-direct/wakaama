@@ -213,7 +213,8 @@ static uint8_t prv_write(uint16_t instanceId, int numData, lwm2m_data_t *dataArr
                     return COAP_400_BAD_REQUEST;
                 }
                 targetP->test = (uint8_t)value;
-            } break;
+            }
+            break;
             case 2:
                 return COAP_405_METHOD_NOT_ALLOWED;
             case 3:

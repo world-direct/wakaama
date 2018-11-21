@@ -131,7 +131,7 @@ static uint8_t prv_firmware_read(uint16_t instanceId, int *numDataP, lwm2m_data_
                 lwm2m_data_t *subTlvP = NULL;
 
                 while ((num < LWM2M_FIRMWARE_PROTOCOL_NUM) &&
-                       (data->protocol_support[num] != LWM2M_FIRMWARE_PROTOCOL_NULL)) {
+                        (data->protocol_support[num] != LWM2M_FIRMWARE_PROTOCOL_NULL)) {
                     num++;
                 }
 

@@ -74,30 +74,30 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP, security_instance_t *targetP)
 
         case LWM2M_SECURITY_PUBLIC_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-            {
-                uint8_t value = 0;
+        {
+            uint8_t value = 0;
 
-                lwm2m_data_encode_opaque(&value, 1, dataP);
-            }
-            return COAP_205_CONTENT;
+            lwm2m_data_encode_opaque(&value, 1, dataP);
+        }
+        return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SERVER_PUBLIC_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-            {
-                uint8_t value = 0;
+        {
+            uint8_t value = 0;
 
-                lwm2m_data_encode_opaque(&value, 1, dataP);
-            }
-            return COAP_205_CONTENT;
+            lwm2m_data_encode_opaque(&value, 1, dataP);
+        }
+        return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SECRET_KEY_ID:
             // Here we return an opaque of 1 byte containing 0
-            {
-                uint8_t value = 0;
+        {
+            uint8_t value = 0;
 
-                lwm2m_data_encode_opaque(&value, 1, dataP);
-            }
-            return COAP_205_CONTENT;
+            lwm2m_data_encode_opaque(&value, 1, dataP);
+        }
+        return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SECURITY_ID:
             lwm2m_data_encode_int(LWM2M_SECURITY_MODE_NONE, dataP);
@@ -105,19 +105,19 @@ static uint8_t prv_get_value(lwm2m_data_t *dataP, security_instance_t *targetP)
 
         case LWM2M_SECURITY_SMS_KEY_PARAM_ID:
             // Here we return an opaque of 6 bytes containing a buggy value
-            {
-                char *value = "12345";
-                lwm2m_data_encode_opaque((uint8_t *)value, 6, dataP);
-            }
-            return COAP_205_CONTENT;
+        {
+            char *value = "12345";
+            lwm2m_data_encode_opaque((uint8_t *)value, 6, dataP);
+        }
+        return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SECRET_KEY_ID:
             // Here we return an opaque of 32 bytes containing a buggy value
-            {
-                char *value = "1234567890abcdefghijklmnopqrstu";
-                lwm2m_data_encode_opaque((uint8_t *)value, 32, dataP);
-            }
-            return COAP_205_CONTENT;
+        {
+            char *value = "1234567890abcdefghijklmnopqrstu";
+            lwm2m_data_encode_opaque((uint8_t *)value, 32, dataP);
+        }
+        return COAP_205_CONTENT;
 
         case LWM2M_SECURITY_SMS_SERVER_NUMBER_ID:
             lwm2m_data_encode_int(0, dataP);
@@ -160,7 +160,8 @@ static uint8_t prv_security_read(uint16_t instanceId, int *numDataP, lwm2m_data_
                               LWM2M_SECURITY_SMS_SECRET_KEY_ID,
                               LWM2M_SECURITY_SMS_SERVER_NUMBER_ID,
                               LWM2M_SECURITY_SHORT_SERVER_ID,
-                              LWM2M_SECURITY_HOLD_OFF_ID};
+                              LWM2M_SECURITY_HOLD_OFF_ID
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);

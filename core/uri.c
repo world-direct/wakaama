@@ -101,7 +101,7 @@ lwm2m_uri_t *uri_decode(char *altPath, multi_option_t *uriPath)
 
     // Read object ID
     if (NULL != uriPath && URI_REGISTRATION_SEGMENT_LEN == uriPath->len &&
-        0 == strncmp(URI_REGISTRATION_SEGMENT, (char *)uriPath->data, uriPath->len)) {
+            0 == strncmp(URI_REGISTRATION_SEGMENT, (char *)uriPath->data, uriPath->len)) {
         uriP->flag |= LWM2M_URI_FLAG_REGISTRATION;
         uriPath = uriPath->next;
         if (uriPath == NULL) {

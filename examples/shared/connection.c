@@ -168,7 +168,7 @@ int connection_send(connection_t *connP, uint8_t *buffer, size_t length)
     offset = 0;
     while (offset != length) {
         nbSent =
-            sendto(connP->sock, buffer + offset, length - offset, 0, (struct sockaddr *)&(connP->addr), connP->addrLen);
+            sendto(connP->sock, buffer + offset, length - offset, 0, (struct sockaddr *) & (connP->addr), connP->addrLen);
         if (nbSent == -1) {
             return -1;
         }

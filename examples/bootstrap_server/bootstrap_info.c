@@ -321,8 +321,8 @@ static read_server_t *prv_read_next_server(FILE *fd)
     }
     if (readSrvP->id == 0 || readSrvP->uri == 0 || (readSrvP->securityMode != LWM2M_SECURITY_MODE_NONE &&
                                                     (readSrvP->publicKey == NULL || readSrvP->secretKey == NULL)) ||
-        (readSrvP->serverKey == NULL && (readSrvP->securityMode == LWM2M_SECURITY_MODE_RAW_PUBLIC_KEY ||
-                                         readSrvP->securityMode == LWM2M_SECURITY_MODE_CERTIFICATE))) {
+            (readSrvP->serverKey == NULL && (readSrvP->securityMode == LWM2M_SECURITY_MODE_RAW_PUBLIC_KEY ||
+                                             readSrvP->securityMode == LWM2M_SECURITY_MODE_CERTIFICATE))) {
         goto error;
     }
 
@@ -724,7 +724,8 @@ bs_info_t *bs_get_info(FILE *fd)
                     } else {
                         cmdP = cmdP->next;
                     }
-                } break;
+                }
+                break;
 
                 case BS_DELETE:
                 default:

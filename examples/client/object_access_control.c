@@ -77,7 +77,7 @@ static uint8_t prv_set_tlv(lwm2m_data_t *dataP, acc_ctrl_oi_t *accCtrlOiP)
             int ri;
             acc_ctrl_ri_t *accCtrlRiP;
             for (accCtrlRiP = accCtrlOiP->accCtrlValList, ri = 0; accCtrlRiP != NULL;
-                 accCtrlRiP = accCtrlRiP->next, ri++)
+                    accCtrlRiP = accCtrlRiP->next, ri++)
                 ;
 
             if (ri == 0) { // no values!
@@ -85,14 +85,15 @@ static uint8_t prv_set_tlv(lwm2m_data_t *dataP, acc_ctrl_oi_t *accCtrlOiP)
             } else {
                 lwm2m_data_t *subTlvP = lwm2m_data_new(ri);
                 for (accCtrlRiP = accCtrlOiP->accCtrlValList, ri = 0; accCtrlRiP != NULL;
-                     accCtrlRiP = accCtrlRiP->next, ri++) {
+                        accCtrlRiP = accCtrlRiP->next, ri++) {
                     subTlvP[ri].id = accCtrlRiP->resInstId;
                     lwm2m_data_encode_int(accCtrlRiP->accCtrlValue, &subTlvP[ri]);
                 }
                 lwm2m_data_encode_instances(subTlvP, 2, dataP);
                 return COAP_205_CONTENT;
             }
-        } break;
+        }
+        break;
         case RES_M_ACCESS_CONTROL_OWNER:
             lwm2m_data_encode_int(accCtrlOiP->accCtrlOwner, dataP);
             return COAP_205_CONTENT;
@@ -118,7 +119,8 @@ static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataA
         uint16_t resList[] = {RES_M_OBJECT_ID,
                               RES_M_OBJECT_INSTANCE_ID,
                               RES_O_ACL, // prv_set_tlv will return COAP_404_NOT_FOUND w/o values!
-                              RES_M_ACCESS_CONTROL_OWNER};
+                              RES_M_ACCESS_CONTROL_OWNER
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);
@@ -255,7 +257,8 @@ prv_write_resources(uint16_t instanceId, int numData, lwm2m_data_t *tlvArray, lw
                         LWM2M_LIST_FREE(acValListSave);
                     }
                 }
-            } break;
+            }
+            break;
             case RES_M_ACCESS_CONTROL_OWNER: {
                 if (1 == lwm2m_data_decode_int(tlvArray + i, &value)) {
                     if (value >= 0 && value <= 0xFFFF) {
@@ -267,7 +270,8 @@ prv_write_resources(uint16_t instanceId, int numData, lwm2m_data_t *tlvArray, lw
                 } else {
                     result = COAP_400_BAD_REQUEST;
                 }
-            } break;
+            }
+            break;
             default:
                 return COAP_404_NOT_FOUND;
         }

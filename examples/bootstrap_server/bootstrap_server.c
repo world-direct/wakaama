@@ -157,7 +157,7 @@ static void prv_endpoint_clean(internal_data_t *dataP)
     endpoint_t *parentP;
 
     while (dataP->endpointList != NULL &&
-           (dataP->endpointList->cmdList == NULL || dataP->endpointList->status == CMD_STATUS_FAIL)) {
+            (dataP->endpointList->cmdList == NULL || dataP->endpointList->status == CMD_STATUS_FAIL)) {
         endP = dataP->endpointList->next;
         prv_endpoint_free(dataP->endpointList);
         dataP->endpointList = endP;
@@ -216,8 +216,9 @@ static void prv_send_command(internal_data_t *dataP, endpoint_t *endP)
             fprintf(stdout, " to \"%s\"", endP->name);
 
             res = lwm2m_bootstrap_write(
-                dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
-        } break;
+                      dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->securityData, serverP->securityLen);
+        }
+        break;
 
         case BS_WRITE_SERVER: {
             lwm2m_uri_t uri;
@@ -238,8 +239,9 @@ static void prv_send_command(internal_data_t *dataP, endpoint_t *endP)
             fprintf(stdout, " to \"%s\"", endP->name);
 
             res = lwm2m_bootstrap_write(
-                dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
-        } break;
+                      dataP->lwm2mH, endP->handle, &uri, LWM2M_CONTENT_TLV, serverP->serverData, serverP->serverLen);
+        }
+        break;
 
         case BS_FINISH:
             fprintf(stdout, "Sending BOOTSTRAP FINISH ");
@@ -436,16 +438,18 @@ int main(int argc, char *argv[])
     int opt;
     FILE *fd;
     command_desc_t commands[] = {{"boot",
-                                  "Bootstrap a client (Server Initiated).",
-                                  " boot URI [NAME]\r\n"
-                                  "   URI: uri of the client to bootstrap\r\n"
-                                  "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
-                                  "Example: boot coap://[::1]:56830 testlwm2mclient",
-                                  prv_bootstrap_client,
-                                  &data},
-                                 {"q", "Quit the server.", NULL, prv_quit, NULL},
+            "Bootstrap a client (Server Initiated).",
+            " boot URI [NAME]\r\n"
+            "   URI: uri of the client to bootstrap\r\n"
+            "   NAME: endpoint name of the client as in the .ini file (optionnal)\r\n"
+            "Example: boot coap://[::1]:56830 testlwm2mclient",
+            prv_bootstrap_client,
+            &data
+        },
+        {"q", "Quit the server.", NULL, prv_quit, NULL},
 
-                                 COMMAND_END_LIST};
+        COMMAND_END_LIST
+    };
 
     memset(&data, 0, sizeof(internal_data_t));
 

@@ -158,7 +158,8 @@ static uint8_t prv_location_read(uint16_t objInstId, int *numDataP, lwm2m_data_t
                                  RES_O_RADIUS,
                                  RES_O_VELOCITY,
                                  RES_M_TIMESTAMP,
-                                 RES_O_SPEED}; // readable resources!
+                                 RES_O_SPEED
+                                }; // readable resources!
 
         *numDataP = sizeof(readResIds) / sizeof(uint16_t);
         *tlvArrayP = lwm2m_data_new(*numDataP);

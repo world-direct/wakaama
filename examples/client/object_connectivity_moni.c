@@ -118,7 +118,8 @@ static uint8_t prv_set_value(lwm2m_data_t *dataP, conn_m_data_t *connDataP)
             }
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
             return COAP_205_CONTENT;
-        } break;
+        }
+        break;
 
         case RES_O_ROUTER_IP_ADDRESS: {
             int ri, riCnt = 1; // reduced to 1 instance to fit in one block size
@@ -129,7 +130,8 @@ static uint8_t prv_set_value(lwm2m_data_t *dataP, conn_m_data_t *connDataP)
             }
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
             return COAP_205_CONTENT;
-        } break;
+        }
+        break;
 
         case RES_O_LINK_UTILIZATION:
             lwm2m_data_encode_int(connDataP->linkUtilization, dataP);
@@ -143,7 +145,8 @@ static uint8_t prv_set_value(lwm2m_data_t *dataP, conn_m_data_t *connDataP)
             lwm2m_data_encode_string(VALUE_APN_1, subTlvP);
             lwm2m_data_encode_instances(subTlvP, riCnt, dataP);
             return COAP_205_CONTENT;
-        } break;
+        }
+        break;
 
         case RES_O_CELL_ID:
             lwm2m_data_encode_int(connDataP->cellId, dataP);
@@ -184,7 +187,8 @@ static uint8_t prv_read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataA
                               RES_O_APN,
                               RES_O_CELL_ID,
                               RES_O_SMNC,
-                              RES_O_SMCC};
+                              RES_O_SMCC
+                             };
         int nbRes = sizeof(resList) / sizeof(uint16_t);
 
         *dataArrayP = lwm2m_data_new(nbRes);

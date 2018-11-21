@@ -356,7 +356,8 @@ int lwm2m_data_decode_float(const lwm2m_data_t *dataP, double *valueP)
 
                     *valueP = temp;
                     result = 1;
-                } break;
+                }
+                break;
 
                 case 8:
                     utils_copyValue(valueP, dataP->value.asBuffer.buffer, dataP->value.asBuffer.length);
@@ -627,7 +628,7 @@ int lwm2m_data_serialize(
     // Check format
     if (*formatP == LWM2M_CONTENT_TEXT || *formatP == LWM2M_CONTENT_OPAQUE) {
         if (size != 1 || (uriP != NULL && !LWM2M_URI_IS_SET_RESOURCE(uriP)) || dataP->type == LWM2M_TYPE_OBJECT ||
-            dataP->type == LWM2M_TYPE_OBJECT_INSTANCE || dataP->type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
+                dataP->type == LWM2M_TYPE_OBJECT_INSTANCE || dataP->type == LWM2M_TYPE_MULTIPLE_RESOURCE) {
 #ifdef LWM2M_SUPPORT_JSON
             *formatP = LWM2M_CONTENT_JSON;
 #else
