@@ -14,6 +14,7 @@ public:
     LWM2MObjectBase(lwm2m_context_t *context, uint16_t objID);
     lwm2m_object_t *GetLWM2MObject(void);
     uint8_t PerformValueChange(lwm2m_uri_t *uri, const char *value, size_t valueLength);
+    uint16_t GetCurrentInstancesCount();
 
 protected:
     virtual uint8_t Read(uint16_t instanceId, int *numDataP, lwm2m_data_t **dataArrayP, lwm2m_object_t *objectP) = 0;
@@ -27,7 +28,6 @@ protected:
 
     virtual uint8_t HandleInternalValueChange(uint16_t instanceId, lwm2m_data_t *dataArray, lwm2m_object_t *objectP);
     lwm2m_context_t *GetLWM2MContext();
-    uint16_t GetCurrentInstancesCount();
 
 private:
     lwm2m_context_t *_context;
