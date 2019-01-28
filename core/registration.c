@@ -55,6 +55,7 @@
 */
 
 #include "internals.h"
+#include "registration_hash.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -315,6 +316,7 @@ static void prv_handleRegistrationUpdateReply(lwm2m_transaction_t *transacP, voi
 
 static int prv_updateRegistration(lwm2m_context_t *contextP, lwm2m_server_t *server, bool withObjects)
 {
+
     lwm2m_transaction_t *transaction;
     uint8_t *payload = NULL;
     int payload_length;
@@ -345,7 +347,15 @@ static int prv_updateRegistration(lwm2m_context_t *contextP, lwm2m_server_t *ser
             lwm2m_free(payload);
             return COAP_500_INTERNAL_SERVER_ERROR;
         }
-        coap_set_payload(transaction->message, payload, payload_length);
+
+        uint32_t current_hash = contextP->object_list_hash_cache;
+        uint32_t new_hash = registration_hash(payload, (uint32_t)payload_length);
+
+        if (current_hash != new_hash) {
+            contextP->object_list_hash_cache = new_hash;
+            coap_set_payload(transaction->message, payload, payload_length);
+        }
+
     }
 
     transaction->callback = prv_handleRegistrationUpdateReply;
