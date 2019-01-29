@@ -675,6 +675,7 @@ typedef struct {
     uint16_t nextMID;
     lwm2m_transaction_t *transactionList;
     void *userData;
+    uint32_t object_list_hash_cache;
 } lwm2m_context_t;
 
 
