@@ -86,12 +86,12 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t *uri, const char *value,
     lwm2m_object_t *object = this->GetLWM2MObject();
 
     if (object != refObject) {
-        lwm2m_printf("LWM2MObjectBase -> Object unknown in the given context");
+        LOG("LWM2MObjectBase -> Object unknown in the given context");
         return COAP_405_METHOD_NOT_ALLOWED;
     }
 
     if (this->_lwm2mObject.objID != uri->objectId) {
-        lwm2m_printf("LWM2MObjectBase -> Uri doesn't address this object");
+        LOG("LWM2MObjectBase -> Uri doesn't address this object");
         return COAP_405_METHOD_NOT_ALLOWED;
     }
 
@@ -111,11 +111,11 @@ uint8_t LWM2MObjectBase::PerformValueChange(lwm2m_uri_t *uri, const char *value,
     lwm2m_data_free(1, dataP);
 
     if (result != COAP_204_CHANGED) {
-        lwm2m_printf("LWM2MObjectBase -> Failed to change value.");
+        LOG("LWM2MObjectBase -> Failed to change value.");
         return result;
     }
 
-    lwm2m_printf("LWM2MObjectBase -> Value changed");
+    LOG("LWM2MObjectBase -> Value changed");
     lwm2m_resource_value_changed(this->_context, uri);
 
     return result;
