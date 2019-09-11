@@ -2,11 +2,11 @@
  *
  * Copyright (c) 2016 Intel Corporation and others.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License v2.0
  * and Eclipse Distribution License v1.0 which accompany this distribution.
  *
  * The Eclipse Public License is available at
- *    http://www.eclipse.org/legal/epl-v10.html
+ *    http://www.eclipse.org/legal/epl-v20.html
  * The Eclipse Distribution License is available at
  *    http://www.eclipse.org/org/documents/edl-v10.php.
  *
@@ -40,93 +40,96 @@
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-#ifndef COAP_BLOCK1_FIRMWARE_ONLY
-
 #include "internals.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 // the maximum payload transferred by block1 we accumulate per server
 #define MAX_BLOCK1_SIZE 4096
 
-uint8_t coap_block1_handler(lwm2m_block1_data_t **pBlock1Data,
+uint8_t coap_block1_handler(lwm2m_block1_data_t ** pBlock1Data,
                             uint16_t mid,
-                            uint8_t *buffer,
+                            uint8_t * buffer,
                             size_t length,
                             uint16_t blockSize,
                             uint32_t blockNum,
                             bool blockMore,
-                            uint8_t **outputBuffer,
-                            size_t *outputLength)
+                            uint8_t ** outputBuffer,
+                            size_t * outputLength)
 {
-    lwm2m_block1_data_t *block1Data = *pBlock1Data;
-    ;
+    lwm2m_block1_data_t * block1Data = *pBlock1Data;;
 
     // manage new block1 transfer
-    if (blockNum == 0) {
-        // we already have block1 data for this server, clear it
-        if (block1Data != NULL) {
-            lwm2m_free(block1Data->block1buffer);
-        } else {
-            block1Data = lwm2m_malloc(sizeof(lwm2m_block1_data_t));
-            *pBlock1Data = block1Data;
-            if (NULL == block1Data) {
-                return COAP_500_INTERNAL_SERVER_ERROR;
-            }
-        }
+    if (blockNum == 0)
+    {
+       // we already have block1 data for this server, clear it
+       if (block1Data != NULL)
+       {
+           lwm2m_free(block1Data->block1buffer);
+       }
+       else
+       {
+           block1Data = lwm2m_malloc(sizeof(lwm2m_block1_data_t));
+           *pBlock1Data = block1Data;
+           if (NULL == block1Data) return COAP_500_INTERNAL_SERVER_ERROR;
+       }
 
-        block1Data->block1buffer = lwm2m_malloc(length);
-        block1Data->block1bufferSize = length;
+       block1Data->block1buffer = lwm2m_malloc(length);
+       block1Data->block1bufferSize = length;
 
-        // write new block in buffer
-        memcpy(block1Data->block1buffer, buffer, length);
-        block1Data->lastmid = mid;
+       // write new block in buffer
+       memcpy(block1Data->block1buffer, buffer, length);
+       block1Data->lastmid = mid;
     }
     // manage already started block1 transfer
-    else {
-        if (block1Data == NULL) {
-            // we never receive the first block
-            // TODO should we clean block1 data for this server ?
-            return COAP_408_REQ_ENTITY_INCOMPLETE;
-        }
+    else
+    {
+       if (block1Data == NULL)
+       {
+           // we never receive the first block
+           // TODO should we clean block1 data for this server ?
+           return COAP_408_REQ_ENTITY_INCOMPLETE;
+       }
 
-        // If this is a retransmission, we already did that.
-        if (block1Data->lastmid != mid) {
-            uint8_t *oldBuffer = block1Data->block1buffer;
-            size_t oldSize = block1Data->block1bufferSize;
+       // If this is a retransmission, we already did that.
+       if (block1Data->lastmid != mid)
+       {
+          uint8_t * oldBuffer = block1Data->block1buffer;
+          size_t oldSize = block1Data->block1bufferSize;
 
-            if (block1Data->block1bufferSize != blockSize * blockNum) {
-                // we don't receive block in right order
-                // TODO should we clean block1 data for this server ?
-                return COAP_408_REQ_ENTITY_INCOMPLETE;
-            }
+          if (block1Data->block1bufferSize != blockSize * blockNum)
+          {
+              // we don't receive block in right order
+              // TODO should we clean block1 data for this server ?
+              return COAP_408_REQ_ENTITY_INCOMPLETE;
+          }
 
-            // is it too large?
-            if (block1Data->block1bufferSize + length >= MAX_BLOCK1_SIZE) {
-                return COAP_413_ENTITY_TOO_LARGE;
-            }
-            // re-alloc new buffer
-            block1Data->block1bufferSize = oldSize + length;
-            block1Data->block1buffer = lwm2m_malloc(block1Data->block1bufferSize);
-            if (NULL == block1Data->block1buffer) {
-                return COAP_500_INTERNAL_SERVER_ERROR;
-            }
-            memcpy(block1Data->block1buffer, oldBuffer, oldSize);
-            lwm2m_free(oldBuffer);
+          // is it too large?
+          if (block1Data->block1bufferSize + length >= MAX_BLOCK1_SIZE) {
+              return COAP_413_ENTITY_TOO_LARGE;
+          }
+          // re-alloc new buffer
+          block1Data->block1bufferSize = oldSize+length;
+          block1Data->block1buffer = lwm2m_malloc(block1Data->block1bufferSize);
+          if (NULL == block1Data->block1buffer) return COAP_500_INTERNAL_SERVER_ERROR;
+          memcpy(block1Data->block1buffer, oldBuffer, oldSize);
+          lwm2m_free(oldBuffer);
 
-            // write new block in buffer
-            memcpy(block1Data->block1buffer + oldSize, buffer, length);
-            block1Data->lastmid = mid;
-        }
+          // write new block in buffer
+          memcpy(block1Data->block1buffer + oldSize, buffer, length);
+          block1Data->lastmid = mid;
+       }
     }
 
-    if (blockMore) {
+    if (blockMore)
+    {
         *outputLength = -1;
         return COAP_231_CONTINUE;
-    } else {
+    }
+    else
+    {
         // buffer is full, set output parameter
         // we don't free it to be able to send retransmission
         *outputLength = block1Data->block1bufferSize;
@@ -136,16 +139,15 @@ uint8_t coap_block1_handler(lwm2m_block1_data_t **pBlock1Data,
     }
 }
 
-void free_block1_buffer(lwm2m_block1_data_t *block1Data)
+void free_block1_buffer(lwm2m_block1_data_t * block1Data)
 {
-    if (block1Data != NULL) {
+    if (block1Data != NULL)
+    {
         // free block1 buffer
         lwm2m_free(block1Data->block1buffer);
-        block1Data->block1bufferSize = 0;
+        block1Data->block1bufferSize = 0 ;
 
         // free current element
         lwm2m_free(block1Data);
     }
 }
-
-#endif
