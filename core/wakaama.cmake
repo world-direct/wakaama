@@ -23,6 +23,7 @@ set(WAKAAMA_SOURCES
     ${WAKAAMA_SOURCES_DIR}/packet.c
     ${WAKAAMA_SOURCES_DIR}/transaction.c
     ${WAKAAMA_SOURCES_DIR}/registration.c
+    ${WAKAAMA_SOURCES_DIR}/registration_hash.c
     ${WAKAAMA_SOURCES_DIR}/bootstrap.c
     ${WAKAAMA_SOURCES_DIR}/management.c
     ${WAKAAMA_SOURCES_DIR}/observe.c
