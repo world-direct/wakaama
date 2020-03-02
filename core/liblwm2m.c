@@ -374,8 +374,8 @@ next_step:
                 contextP->state = STATE_REGISTER_REQUIRED;
             } else {
                 // Bootstrapping
-                // contextP->state = STATE_BOOTSTRAP_REQUIRED;
-                contextP->state = STATE_REGISTER_REQUIRED;
+                contextP->state = STATE_BOOTSTRAP_REQUIRED;
+                //contextP->state = STATE_REGISTER_REQUIRED;
             }
             goto next_step;
             break;
