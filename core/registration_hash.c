@@ -57,19 +57,25 @@ uint32_t registration_hash_context(lwm2m_context_t *context)
 
     int payload_length = object_getRegisterPayloadBufferLength(context);
     if (payload_length <= 0) {
+#ifdef LWM2M_WITH_LOGS
         lwm2m_printf("%s payload_length(%d) < 0", __PRETTY_FUNCTION__, payload_length);
+#endif
         return 0;
     }
 
     uint8_t *payload = (uint8_t *)lwm2m_malloc(payload_length * sizeof(uint8_t));
     if (payload == NULL) {
+#ifdef LWM2M_WITH_LOGS
         lwm2m_printf("%s payload == NULL", __PRETTY_FUNCTION__);
+#endif
         return 0;
     }
 
     int res = object_getRegisterPayload(context, payload, payload_length);
     if (res <= 0) {
+#ifdef LWM2M_WITH_LOGS
         lwm2m_printf("%s res(%d) < 0", __PRETTY_FUNCTION__, res);
+#endif
         return 0;
     }
 
