@@ -69,7 +69,7 @@ static int prv_getRegistrationQueryLength(lwm2m_context_t *contextP, lwm2m_serve
 {
     int index;
     int res;
-    char buffer[21];
+    uint8_t buffer[21];
 
     index = strlen(QUERY_STARTER QUERY_VERSION_FULL QUERY_DELIMITER QUERY_NAME);
     index += strlen(contextP->endpointName);
@@ -175,7 +175,7 @@ static int prv_getRegistrationQuery(lwm2m_context_t *contextP, lwm2m_server_t *s
             return 0;
         }
         index += res;
-        res = utils_intToText(server->lifetime, buffer + index, length - index);
+        res = utils_intToText(server->lifetime, (uint8_t*)(buffer + index), length - index);
         if (res == 0) {
             return 0;
         }

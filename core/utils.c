@@ -52,6 +52,8 @@
 #include <string.h>
 #include "internals.h"
 
+#include <ctype.h>
+
 
 int utils_textToInt(uint8_t *buffer, int length, int64_t *dataP)
 {
@@ -472,7 +474,7 @@ static inline bool is_base64(unsigned char c)
 static inline int base64_find_index(char c)
 {
 
-    for (int i = 0; i < sizeof(b64Alphabet); i++) {
+    for (size_t i = 0; i < sizeof(b64Alphabet); i++) {
         if (b64Alphabet[i] == c) {
             return i;
         }

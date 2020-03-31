@@ -490,8 +490,8 @@ void lwm2m_data_decode_objlink(const lwm2m_data_t *dataP, lwm2m_uri_t *uri)
     // format: <objectId>:<instanceId>
 
     // find ":"
-    int split_position = 0;
-    for (int i = 0; i < dataP->value.asBuffer.length; i++) {
+    size_t split_position = 0;
+    for (size_t i = 0; i < dataP->value.asBuffer.length; i++) {
         if (dataP->value.asBuffer.buffer[i] == ':') {
             split_position = i;
         }
